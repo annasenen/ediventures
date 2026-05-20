@@ -257,6 +257,86 @@ body {
     color: #ccc;
 }
 
+.page-hero {
+    background:
+        linear-gradient(rgba(0, 0, 0, 0.72), rgba(0, 0, 0, 0.72)),
+        url('/assets/img/view-loch-lomond-one-day-tour.jpg') center/cover no-repeat;
+    padding: 5rem 0;
+}
+
+.min-vh-50 {
+    min-height: 50vh;
+}
+
+.page-title {
+    font-size: clamp(2.2rem, 5vw, 4rem);
+    font-weight: 800;
+    line-height: 1.08;
+}
+
+.page-hero-text {
+    font-size: 1.15rem;
+    max-width: 850px;
+    color: #eee;
+}
+
+.tour-intro {
+    max-width: 900px;
+}
+
+.tour-card {
+    display: flex;
+    flex-direction: column;
+    background-color: #fff;
+    border-radius: 1.25rem;
+    overflow: hidden;
+    box-shadow: 0 0.5rem 1.5rem rgba(0, 0, 0, 0.08);
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.tour-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 1rem 2rem rgba(0, 0, 0, 0.14);
+}
+
+.tour-card-img {
+    width: 100%;
+    height: 240px;
+    object-fit: cover;
+}
+
+.tour-card-body {
+    display: flex;
+    flex-direction: column;
+    flex: 1;
+    padding: 1.5rem;
+}
+
+.tour-card-body h3 {
+    font-size: 1.25rem;
+    font-weight: 800;
+}
+
+.tour-meta {
+    display: flex;
+    flex-direction: column;
+    gap: 0.35rem;
+    color: var(--brand-green);
+    font-weight: 700;
+    margin: 0.75rem 0;
+}
+
+.custom-tour-box {
+    background-color: #fff;
+    border-radius: 1.25rem;
+    padding: 2rem;
+    box-shadow: 0 0.5rem 1.5rem rgba(0, 0, 0, 0.08);
+}
+
+.custom-tour-box h3 {
+    font-weight: 800;
+}
+
 @media (max-width: 768px) {
     .site-logo {
         height: 55px;
