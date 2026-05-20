@@ -1,0 +1,276 @@
+:root {
+    --brand-green: #61792d;
+    --brand-dark: #111111;
+    --brand-light: #f7f8f3;
+}
+
+body {
+    font-family: 'Montserrat', sans-serif;
+    color: #222;
+    overflow-x: hidden;
+}
+
+.site-logo {
+    height: 70px;
+    width: auto;
+}
+
+.nav-link {
+    font-weight: 600;
+    color: #111;
+}
+
+.nav-link:hover {
+    color: var(--brand-green);
+}
+
+.btn-brand {
+    background-color: var(--brand-green);
+    border: 2px solid var(--brand-green);
+    color: #fff;
+    font-weight: 600;
+}
+
+.btn-brand:hover {
+    background-color: #fff;
+    color: var(--brand-green);
+    border-color: var(--brand-green);
+}
+
+.hero-section {
+    background:
+        linear-gradient(rgba(0, 0, 0, 0.76), rgba(0, 0, 0, 0.76)),
+        url('/assets/img/background-image.jpg') center/cover no-repeat;
+    color: #fff;
+    padding: 5rem 0;
+}
+
+.min-vh-75 {
+    min-height: 75vh;
+}
+
+.eyebrow,
+.section-label {
+    color: var(--brand-green);
+    font-weight: 800;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    font-size: 0.9rem;
+}
+
+.hero-title {
+    font-size: clamp(2.2rem, 5vw, 4.3rem);
+    font-weight: 800;
+    line-height: 1.05;
+}
+
+.hero-text {
+    font-size: 1.15rem;
+    max-width: 650px;
+    color: #eeeeee;
+}
+
+.hero-image-card {
+    border: 8px solid rgba(255, 255, 255, 0.12);
+    border-radius: 1.5rem;
+    box-shadow: 0 1rem 3rem rgba(0, 0, 0, 0.35);
+}
+
+.trust-bar {
+    background-color: var(--brand-green);
+    color: #fff;
+}
+
+.trust-bar i {
+    font-size: 1.8rem;
+    margin-bottom: 0.5rem;
+}
+
+.trust-bar p {
+    margin-bottom: 0;
+    font-weight: 700;
+}
+
+.section-title {
+    font-weight: 800;
+    line-height: 1.15;
+}
+
+.section-intro {
+    max-width: 850px;
+    color: #ddd;
+}
+
+.text-brand {
+    color: var(--brand-green);
+}
+
+.service-card,
+.booking-card,
+.feature-box,
+.step-box {
+    border-radius: 1.25rem;
+}
+
+.service-card {
+    background-color: #fff;
+    overflow: hidden;
+    box-shadow: 0 0.5rem 1.5rem rgba(0, 0, 0, 0.08);
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.service-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 1rem 2rem rgba(0, 0, 0, 0.14);
+}
+
+.service-card img {
+    width: 100%;
+    height: 240px;
+    object-fit: cover;
+}
+
+.service-card h3,
+.booking-card h3,
+.feature-box h3,
+.step-box h3 {
+    font-size: 1.25rem;
+    font-weight: 800;
+}
+
+.text-link {
+    color: var(--brand-green);
+    font-weight: 700;
+    text-decoration: none;
+}
+
+.text-link:hover {
+    color: #000;
+}
+
+.booking-card {
+    background-color: #fff;
+    color: #111;
+    height: 100%;
+    padding: 2rem;
+    text-align: center;
+}
+
+.booking-card i {
+    color: var(--brand-green);
+    font-size: 2.2rem;
+    margin-bottom: 1rem;
+}
+
+.feature-box {
+    background-color: var(--brand-light);
+    padding: 1.5rem;
+    height: 100%;
+}
+
+.feature-box i {
+    color: var(--brand-green);
+    font-size: 2rem;
+    margin-bottom: 1rem;
+}
+
+.step-box {
+    background-color: #fff;
+    padding: 1.5rem;
+    height: 100%;
+    box-shadow: 0 0.5rem 1.5rem rgba(0, 0, 0, 0.06);
+}
+
+.step-box span {
+    display: inline-flex;
+    width: 45px;
+    height: 45px;
+    border-radius: 50%;
+    align-items: center;
+    justify-content: center;
+    background-color: var(--brand-green);
+    color: #fff;
+    font-weight: 800;
+    margin-bottom: 1rem;
+}
+
+.final-cta {
+    background:
+        linear-gradient(rgba(97, 121, 45, 0.9), rgba(97, 121, 45, 0.9)),
+        url('/assets/img/background-image.jpg') center/cover no-repeat;
+    padding: 5rem 0;
+}
+
+.footer-logo {
+    height: 70px;
+    background-color: #fff;
+    border-radius: 0.5rem;
+    padding: 0.25rem;
+}
+
+.footer-text {
+    color: #ccc;
+}
+
+.footer-heading {
+    font-size: 1rem;
+    font-weight: 800;
+    margin-bottom: 1rem;
+}
+
+.footer-list {
+    list-style: none;
+    padding-left: 0;
+}
+
+.footer-list li {
+    margin-bottom: 0.5rem;
+}
+
+.footer a {
+    color: #ddd;
+    text-decoration: none;
+}
+
+.footer a:hover {
+    color: var(--brand-green);
+}
+
+.social-links a {
+    display: inline-flex;
+    width: 38px;
+    height: 38px;
+    border-radius: 50%;
+    align-items: center;
+    justify-content: center;
+    background-color: var(--brand-green);
+    color: #fff;
+    margin-right: 0.5rem;
+}
+
+.social-links a:hover {
+    background-color: #fff;
+    color: var(--brand-green);
+}
+
+.footer-bottom-link {
+    color: #ccc;
+}
+
+@media (max-width: 768px) {
+    .site-logo {
+        height: 55px;
+    }
+
+    .hero-section {
+        padding: 3rem 0;
+    }
+
+    .hero-text {
+        font-size: 1rem;
+    }
+
+    .service-card img {
+        height: 210px;
+    }
+}
