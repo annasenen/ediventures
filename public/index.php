@@ -26,7 +26,7 @@ include __DIR__ . '/../includes/nav.php';
                     </p>
 
                     <div class="d-flex flex-column flex-sm-row gap-3 mt-4">
-                        <a href="/contact.php" class="btn btn-brand btn-lg rounded-pill px-4">Get a Quote</a>
+                        <a href="/quote.php" class="btn btn-brand btn-lg rounded-pill px-4">Get a Quote</a>
                         <a href="/scotland-tours.php" class="btn btn-outline-light btn-lg rounded-pill px-4">Explore Tours</a>
                     </div>
                 </div>
@@ -179,7 +179,7 @@ include __DIR__ . '/../includes/nav.php';
             </div>
 
             <div class="text-center mt-5">
-                <a href="/contact.php" class="btn btn-brand btn-lg rounded-pill px-5">Ask About Availability</a>
+                <a href="/availability.php" class="btn btn-brand btn-lg rounded-pill px-5">Ask About Availability</a>
             </div>
         </div>
     </section>
@@ -282,7 +282,7 @@ include __DIR__ . '/../includes/nav.php';
                 Send us your journey details and we will reply with availability and a quote.
             </p>
             <div class="d-flex flex-column flex-sm-row gap-3 justify-content-center">
-                <a href="/contact.php" class="btn btn-light btn-lg rounded-pill px-5">Get a Quote</a>
+                <a href="/quote.php" class="btn btn-light btn-lg rounded-pill px-5">Get a Quote</a>
                 <a href="https://api.whatsapp.com/send?phone=447944267723" class="btn btn-outline-light btn-lg rounded-pill px-5">WhatsApp Us</a>
             </div>
         </div>
