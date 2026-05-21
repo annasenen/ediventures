@@ -55,6 +55,8 @@
                 <a href="/terms.php" class="footer-bottom-link">Terms & Conditions</a>
                 <span class="mx-2">|</span>
                 <a href="/cookies.php" class="footer-bottom-link">Cookie Policy</a>
+                <span class="mx-2">|</span>
+                <a href="/booking-policy.php" class="footer-bottom-link">Booking & Cancellation Policy</a>
             </div>
         </div>
     </div>
