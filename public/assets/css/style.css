@@ -365,6 +365,26 @@ body {
     margin-bottom: 0.75rem;
 }
 
+.booking-form-card {
+    max-width: 900px;
+    background-color: #fff;
+    border-radius: 1.25rem;
+    padding: 2rem;
+    box-shadow: 0 0.75rem 2rem rgba(0, 0, 0, 0.08);
+}
+
+.booking-form-card .form-control,
+.booking-form-card .form-select {
+    padding: 0.8rem;
+    border-radius: 0.75rem;
+}
+
+.booking-form-card .form-control:focus,
+.booking-form-card .form-select:focus {
+    border-color: var(--brand-green);
+    box-shadow: 0 0 0 0.2rem rgba(97, 121, 45, 0.15);
+}
+
 @media (max-width: 768px) {
     .site-logo {
         height: 55px;
