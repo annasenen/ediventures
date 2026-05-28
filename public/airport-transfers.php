@@ -69,7 +69,9 @@ include __DIR__ . '/../includes/nav.php';
                                 Travel from your pickup address to the airport with a pre-booked private hire journey.
                                 Ideal for holidays, business trips, family travel and early morning departures.
                             </p>
-                            <a href="/airport-booking.php?type=dropoff" class="text-link">Book airport drop-off <i class="fa-solid fa-arrow-right"></i></a>
+                            <button type="button" class="btn btn-brand btn-lg rounded-pill px-4" data-bs-toggle="modal" data-bs-target="#airportBookingModal">
+                                Book Airport Transfer
+                            </button>
                         </div>
                     </div>
                 </div>
@@ -194,5 +196,7 @@ include __DIR__ . '/../includes/nav.php';
     </section>
 
 </main>
+
+<?php include __DIR__ . '/../includes/airport-booking-modal.php'; ?>
 
 <?php include __DIR__ . '/../includes/footer.php'; ?>

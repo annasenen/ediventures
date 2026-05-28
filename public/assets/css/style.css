@@ -385,6 +385,28 @@ body {
     box-shadow: 0 0 0 0.2rem rgba(97, 121, 45, 0.15);
 }
 
+.booking-modal {
+    border-radius: 1.25rem;
+    overflow: hidden;
+}
+
+.booking-modal .modal-header {
+    background-color: #f7f8f3;
+    border-bottom: 1px solid #e5e5e5;
+}
+
+.booking-modal .form-control,
+.booking-modal .form-select {
+    padding: 0.8rem;
+    border-radius: 0.75rem;
+}
+
+.booking-modal .form-control:focus,
+.booking-modal .form-select:focus {
+    border-color: var(--brand-green);
+    box-shadow: 0 0 0 0.2rem rgba(97, 121, 45, 0.15);
+}
+
 @media (max-width: 768px) {
     .site-logo {
         height: 55px;
