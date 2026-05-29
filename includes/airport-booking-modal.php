@@ -86,7 +86,7 @@
                     <div class="row g-3 mt-4">
                         <div class="col-md-4">
                             <label class="form-label fw-bold">Travel date</label>
-                            <input type="date" class="form-control" name="travel_date" required>
+                            <input type="date" class="form-control" name="travel_date" id="travelDate" required>
                         </div>
 
                         <div class="col-md-4">

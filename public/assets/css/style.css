@@ -407,6 +407,24 @@ body {
     box-shadow: 0 0 0 0.2rem rgba(97, 121, 45, 0.15);
 }
 
+/* Darker dropdown selected text */
+.form-select {
+    color: #1f1f1f;
+    font-weight: 500;
+}
+
+/* Better dropdown option readability */
+.form-select option {
+    color: #1f1f1f;
+    font-weight: 500;
+}
+
+/* Disabled dropdown options */
+.form-select option:disabled {
+    color: #9a9a9a;
+    font-weight: 400;
+}
+
 @media (max-width: 768px) {
     .site-logo {
         height: 55px;
