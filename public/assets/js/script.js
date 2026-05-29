@@ -17,6 +17,7 @@ document.addEventListener('DOMContentLoaded', function () {
     const smallBagsSelect = document.getElementById('smallBagsSelect');
     const oversizedLuggage = document.getElementById('oversizedLuggage');
     const manualLuggageMessage = document.getElementById('manualLuggageMessage');
+    const extraStopSelect = document.getElementById('extraStopSelect');
 
     function updateJourneyFields() {
         if (!journeyType || !flightNumberGroup) return;
@@ -125,7 +126,10 @@ document.addEventListener('DOMContentLoaded', function () {
             smallBags = maxSmall;
         }
 
-        if (oversizedLuggage && oversizedLuggage.checked) {
+        if (
+            (oversizedLuggage && oversizedLuggage.checked) ||
+            (extraStopSelect && extraStopSelect.value === 'yes')
+        ) {
             manualLuggageMessage.classList.remove('d-none');
         } else {
             manualLuggageMessage.classList.add('d-none');

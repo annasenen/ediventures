@@ -152,7 +152,9 @@
                                 <option value="5">5 large suitcases</option>
                                 <option value="6">6 large suitcases</option>
                             </select>
-                            <div class="form-text">Approx. checked suitcase size.</div>
+                            <div class="form-text">
+                                Checked luggage size, up to: 90 × 75 × 43 cm.
+                            </div>
                         </div>
 
                         <div class="col-md-4">
@@ -169,28 +171,34 @@
                                 <option value="7">7 small bags</option>
                                 <option value="8">8 small bags</option>
                             </select>
-                            <div class="form-text">Cabin-size bag or similar.</div>
+                            <div class="form-text">
+                                Cabin-size bag, up to: 55 × 45 × 25 cm.
+                            </div>
                         </div>
                     </div>
 
                     <div class="form-text mt-2">
-                        Large suitcase: approx. checked suitcase size. Small bag: cabin-size bag or similar.
+                        Some luggage combinations become unavailable depending on the number of passengers selected.
                     </div>
 
                     <div class="form-check mt-4">
                         <input class="form-check-input" type="checkbox" value="yes" id="oversizedLuggage" name="oversized_luggage">
                         <label class="form-check-label fw-bold" for="oversizedLuggage">
-                            I have oversized luggage, sports equipment, large boxes or unusual items
+                            I have oversized luggage, a buggy, sports equipment, large boxes or unusual items
                         </label>
                     </div>
 
-                    <div class="alert alert-warning d-none mt-4" id="manualLuggageMessage">
-                        This passenger and luggage combination needs manual confirmation. Soft backpacks may be possible if passengers are happy to keep them with them, but this can affect comfort. Please request a quote or contact us by WhatsApp before booking.
+                    <div class="mt-4">
+                        <label class="form-label fw-bold">Do you need an extra stop?</label>
+                        <select class="form-select" name="extra_stop" id="extraStopSelect" required>
+                            <option value="">Please choose</option>
+                            <option value="no">No, direct airport transfer only</option>
+                            <option value="yes">Yes, I need an extra stop</option>
+                        </select>
                     </div>
 
-                    <div class="mt-4">
-                        <label class="form-label fw-bold">Additional notes</label>
-                        <textarea class="form-control" name="notes" rows="4" placeholder="Add child seats, extra stops, buggy, large luggage or special requests here."></textarea>
+                    <div class="alert alert-warning d-none mt-4" id="manualLuggageMessage">
+                        This booking needs manual confirmation. Please request a quote if you have oversized luggage, a buggy, unusual items, or an extra stop, as this may affect vehicle space, journey time and price.
                     </div>
 
                     <div class="alert alert-info mt-4">
