@@ -11,7 +11,7 @@ include __DIR__ . '/../includes/nav.php';
 
     <section class="hero-section">
         <div class="container">
-            <div class="row align-items-center min-vh-75 gy-5">
+            <div class="row align-items-center gy-5 home-hero-row">
                 <div class="col-lg-6">
                     <p class="eyebrow mb-3">South Queensferry • Edinburgh • Scotland</p>
 

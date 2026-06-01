@@ -32,7 +32,7 @@
 
             <div class="col-lg-3">
                 <h3 class="footer-heading">Contact</h3>
-                <p><i class="fa-solid fa-location-dot me-2"></i>South Queensferry, Scotland</p>
+                <p><i class="fa-solid fa-location-dot me-2"></i>South Queensferry, Edinburgh, Scotland</p>
                 <p><i class="fa-solid fa-phone me-2"></i><a href="tel:+447944267723">+44 7944 267723</a></p>
                 <p><i class="fa-solid fa-envelope me-2"></i><a href="mailto:info@ediventures.co.uk">info@ediventures.co.uk</a></p>
 

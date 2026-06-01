@@ -2,6 +2,7 @@ document.addEventListener('DOMContentLoaded', function () {
     console.log('EdiVentures website loaded');
 });
 
+/* AIRPORT BOOKING MODAL */
 document.addEventListener('DOMContentLoaded', function () {
     const journeyType = document.getElementById('journeyType');
     const addressSectionTitle = document.getElementById('addressSectionTitle');
@@ -23,44 +24,17 @@ document.addEventListener('DOMContentLoaded', function () {
     const extraStopSelect = document.getElementById('extraStopSelect');
     const manualLuggageMessage = document.getElementById('manualLuggageMessage');
 
-    function setMinimumDate() {
-        if (!travelDate) return;
-
-        const today = new Date();
-        const yyyy = today.getFullYear();
-        const mm = String(today.getMonth() + 1).padStart(2, '0');
-        const dd = String(today.getDate()).padStart(2, '0');
-
-        travelDate.min = `${yyyy}-${mm}-${dd}`;
-    }
-
-    function isTodaySelected() {
-        if (!travelDate || !travelDate.value) return false;
-
-        const today = new Date();
-        const yyyy = today.getFullYear();
-        const mm = String(today.getMonth() + 1).padStart(2, '0');
-        const dd = String(today.getDate()).padStart(2, '0');
-
-        return travelDate.value === `${yyyy}-${mm}-${dd}`;
-    }
-
     function getMinimumNoticeMinutes() {
         if (!journeyType || !airportSelect) return 60;
 
-        const type = journeyType.value;
-        const airport = airportSelect.value;
+        if (journeyType.value === 'dropoff') return 60;
 
-        if (type === 'dropoff') {
-            return 60; // temporary front-end rule until postcode zones are built
-        }
-
-        if (type === 'pickup') {
-            if (airport === 'edinburgh') return 60;
-            if (airport === 'glasgow') return 180;
-            if (airport === 'prestwick') return 300;
-            if (airport === 'dundee') return 300;
-            if (airport === 'newcastle') return 720;
+        if (journeyType.value === 'pickup') {
+            if (airportSelect.value === 'edinburgh') return 60;
+            if (airportSelect.value === 'glasgow') return 180;
+            if (airportSelect.value === 'prestwick') return 300;
+            if (airportSelect.value === 'dundee') return 300;
+            if (airportSelect.value === 'newcastle') return 720;
             return 720;
         }
 
@@ -69,8 +43,7 @@ document.addEventListener('DOMContentLoaded', function () {
 
     function getMinimumAllowedDateTime() {
         const now = new Date();
-        const minimumNotice = getMinimumNoticeMinutes();
-        return new Date(now.getTime() + minimumNotice * 60000);
+        return new Date(now.getTime() + getMinimumNoticeMinutes() * 60000);
     }
 
     function updateTimeOptions() {
@@ -104,21 +77,14 @@ document.addEventListener('DOMContentLoaded', function () {
 
         [...travelHour.options].forEach(option => {
             if (option.value === '') return;
-            const hourValue = parseInt(option.value, 10);
-            option.disabled = hourValue < minHour;
+            option.disabled = parseInt(option.value, 10) < minHour;
         });
 
         if (travelHour.value && parseInt(travelHour.value, 10) === minHour) {
             [...travelMinute.options].forEach(option => {
                 if (option.value === '') return;
-                const minuteValue = parseInt(option.value, 10);
-                option.disabled = minuteValue < minMinute;
+                option.disabled = parseInt(option.value, 10) < minMinute;
             });
-        }
-
-        if (travelHour.value && parseInt(travelHour.value, 10) < minHour) {
-            travelHour.value = '';
-            travelMinute.value = '';
         }
     }
 
@@ -141,16 +107,14 @@ document.addEventListener('DOMContentLoaded', function () {
             if (timeHelpText) timeHelpText.textContent = 'Choose the required time for your airport journey.';
             flightNumberGroup.classList.add('d-none');
         }
+
+        updateTimeOptions();
     }
 
     function updateAirportMessage() {
         if (!airportSelect || !manualAirportMessage) return;
-
-        if (airportSelect.value === 'other') {
-            manualAirportMessage.classList.remove('d-none');
-        } else {
-            manualAirportMessage.classList.add('d-none');
-        }
+        manualAirportMessage.classList.toggle('d-none', airportSelect.value !== 'other');
+        updateTimeOptions();
     }
 
     function numberValue(selectElement) {
@@ -183,7 +147,6 @@ document.addEventListener('DOMContentLoaded', function () {
 
         if (passengers >= 1 && passengers <= 4) {
             maxLarge = 6;
-
             if (largeCases === 6) maxSmall = 0;
             else if (largeCases === 5) maxSmall = 2;
             else if (largeCases === 4) maxSmall = 4;
@@ -193,12 +156,10 @@ document.addEventListener('DOMContentLoaded', function () {
 
         if (passengers === 5) {
             maxLarge = 5;
-
             if (largeCases > 5) {
                 largeCasesSelect.value = '5';
                 largeCases = 5;
             }
-
             if (largeCases === 5) maxSmall = 0;
             else if (largeCases === 4) maxSmall = 2;
             else if (largeCases === 3) maxSmall = 4;
@@ -208,12 +169,10 @@ document.addEventListener('DOMContentLoaded', function () {
 
         if (passengers === 6) {
             maxLarge = 4;
-
             if (largeCases > 4) {
                 largeCasesSelect.value = '4';
                 largeCases = 4;
             }
-
             if (largeCases === 4) maxSmall = 0;
             else if (largeCases === 3) maxSmall = 3;
             else if (largeCases === 2) maxSmall = 5;
@@ -232,11 +191,7 @@ document.addEventListener('DOMContentLoaded', function () {
             (oversizedLuggage && oversizedLuggage.checked) ||
             (extraStopSelect && extraStopSelect.value === 'yes');
 
-        if (needsManualCheck) {
-            manualLuggageMessage.classList.remove('d-none');
-        } else {
-            manualLuggageMessage.classList.add('d-none');
-        }
+        manualLuggageMessage.classList.toggle('d-none', !needsManualCheck);
     }
 
     if (journeyType) journeyType.addEventListener('change', updateJourneyFields);
@@ -250,9 +205,161 @@ document.addEventListener('DOMContentLoaded', function () {
     if (oversizedLuggage) oversizedLuggage.addEventListener('change', updateLuggageRules);
     if (extraStopSelect) extraStopSelect.addEventListener('change', updateLuggageRules);
 
-    setMinimumDate();
     updateTimeOptions();
     updateJourneyFields();
     updateAirportMessage();
     updateLuggageRules();
+});
+
+/* QUOTE FORM */
+document.addEventListener('DOMContentLoaded', function () {
+    const quoteType = document.getElementById('quoteType');
+    const quoteDate = document.getElementById('quoteDate');
+    const quoteHour = document.getElementById('quoteHour');
+    const quoteMinute = document.getElementById('quoteMinute');
+
+    const airportQuoteFields = document.getElementById('airportQuoteFields');
+    const airportQuoteJourneyType = document.getElementById('airportQuoteJourneyType');
+    const quoteFlightNumberGroup = document.getElementById('quoteFlightNumberGroup');
+    const airportQuoteAddressTitle = document.getElementById('airportQuoteAddressTitle');
+    const airportQuoteAddressHelp = document.getElementById('airportQuoteAddressHelp');
+
+    const localJourneyFields = document.getElementById('localJourneyFields');
+    const tourEnquiryFields = document.getElementById('tourEnquiryFields');
+    const customTourFields = document.getElementById('customTourFields');
+    const quoteTimeFields = document.querySelectorAll('.quote-time-field');
+
+    function updateQuoteFields() {
+
+        if (!quoteType) return;
+
+        const isAirport = quoteType.value === 'airport';
+        const isLocalOrLong = quoteType.value === 'local' || quoteType.value === 'long_distance';
+        const isTourEnquiry = quoteType.value === 'tour';
+        const isCustomTour = quoteType.value === 'custom_tour';
+
+        const isAnyTour = isTourEnquiry || isCustomTour;
+
+        if (airportQuoteFields) {
+            airportQuoteFields.classList.toggle('d-none', !isAirport);
+        }
+
+        if (localJourneyFields) {
+            localJourneyFields.classList.toggle('d-none', !isLocalOrLong);
+        }
+
+        if (tourEnquiryFields) {
+            tourEnquiryFields.classList.toggle('d-none', !isTourEnquiry);
+        }
+
+        if (customTourFields) {
+            customTourFields.classList.toggle('d-none', !isCustomTour);
+        }
+
+        quoteTimeFields.forEach(field => {
+            field.classList.toggle('d-none', isAnyTour);
+        });
+
+        updateAirportQuoteFields();
+    }
+
+    function updateAirportQuoteFields() {
+        if (!airportQuoteJourneyType || !quoteFlightNumberGroup) return;
+
+        if (airportQuoteJourneyType.value === 'pickup') {
+            quoteFlightNumberGroup.classList.remove('d-none');
+
+            if (airportQuoteAddressTitle) {
+                airportQuoteAddressTitle.textContent = 'Where should we take you after airport pickup?';
+            }
+
+            if (airportQuoteAddressHelp) {
+                airportQuoteAddressHelp.textContent = 'Enter the destination address where you would like to be dropped off after arriving at the airport.';
+            }
+
+        } else if (airportQuoteJourneyType.value === 'dropoff') {
+            quoteFlightNumberGroup.classList.add('d-none');
+
+            if (airportQuoteAddressTitle) {
+                airportQuoteAddressTitle.textContent = 'Where should we pick you up?';
+            }
+
+            if (airportQuoteAddressHelp) {
+                airportQuoteAddressHelp.textContent = 'Enter the pickup address where the driver should collect you before travelling to the airport.';
+            }
+
+        } else {
+            quoteFlightNumberGroup.classList.add('d-none');
+
+            if (airportQuoteAddressTitle) {
+                airportQuoteAddressTitle.textContent = 'Journey address details';
+            }
+
+            if (airportQuoteAddressHelp) {
+                airportQuoteAddressHelp.textContent = 'Choose airport pickup or drop-off first.';
+            }
+        }
+    }
+
+    function setQuoteMinimumDate() {
+        if (!quoteDate) return;
+
+        const today = new Date();
+        const yyyy = today.getFullYear();
+        const mm = String(today.getMonth() + 1).padStart(2, '0');
+        const dd = String(today.getDate()).padStart(2, '0');
+
+        quoteDate.min = `${yyyy}-${mm}-${dd}`;
+    }
+
+    function isQuoteTodaySelected() {
+        if (!quoteDate || !quoteDate.value) return false;
+
+        const today = new Date();
+        const yyyy = today.getFullYear();
+        const mm = String(today.getMonth() + 1).padStart(2, '0');
+        const dd = String(today.getDate()).padStart(2, '0');
+
+        return quoteDate.value === `${yyyy}-${mm}-${dd}`;
+    }
+
+    function updateQuoteTimeOptions() {
+        if (!quoteDate || !quoteHour || !quoteMinute) return;
+
+        [...quoteHour.options].forEach(option => option.disabled = false);
+        [...quoteMinute.options].forEach(option => option.disabled = false);
+
+        if (!isQuoteTodaySelected()) return;
+
+        const now = new Date();
+        const currentHour = now.getHours();
+        const currentMinute = now.getMinutes();
+
+        [...quoteHour.options].forEach(option => {
+            if (option.value === '') return;
+            option.disabled = parseInt(option.value, 10) < currentHour;
+        });
+
+        if (quoteHour.value && parseInt(quoteHour.value, 10) === currentHour) {
+            [...quoteMinute.options].forEach(option => {
+                if (option.value === '') return;
+                option.disabled = parseInt(option.value, 10) <= currentMinute;
+            });
+        }
+
+        if (quoteHour.value && parseInt(quoteHour.value, 10) < currentHour) {
+            quoteHour.value = '';
+            quoteMinute.value = '';
+        }
+    }
+
+    if (quoteType) quoteType.addEventListener('change', updateQuoteFields);
+    if (airportQuoteJourneyType) airportQuoteJourneyType.addEventListener('change', updateAirportQuoteFields);
+    if (quoteDate) quoteDate.addEventListener('change', updateQuoteTimeOptions);
+    if (quoteHour) quoteHour.addEventListener('change', updateQuoteTimeOptions);
+    if (quoteMinute) quoteMinute.addEventListener('change', updateQuoteTimeOptions);
+
+    updateQuoteFields();
+    setQuoteMinimumDate();
+    updateQuoteTimeOptions();
 });
