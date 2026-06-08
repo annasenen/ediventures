@@ -37,7 +37,7 @@ $tours = [
         "duration" => "9:00 AM – 6:00 PM",
         "price" => "From £380",
         "description" => "A full-day journey combining Edinburgh, the iconic Kelpies and the historic beauty of Stirling.",
-        "link" => "/tour-details.php?tour=edinburgh-kelpies-stirling"
+        "link" => "/tour-details.php?tour=edinburgh-kelpies-stirling-tour"
     ],
     [
         "title" => "St Andrews and the Kingdom of Fife",

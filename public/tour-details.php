@@ -84,8 +84,96 @@ $tours = [
             "Attraction entry costs are not included in the tour price.",
             "This is mainly a sightseeing driving tour with selected short stops."
         ]
-    ],
-];
+        ],
+
+        "edinburgh-kelpies-stirling-tour" => [
+            "pageTitle" => "Edinburgh, Kelpies and Stirling Private Tour | EdiVentures",
+            "metaDescription" => "Private full-day Edinburgh, Kelpies and Stirling tour with EdiVentures. Visit Edinburgh highlights, The Kelpies, Wallace Monument, Stirling Castle and the Forth Bridges.",
+            "title" => "Edinburgh, Kelpies and Stirling Tour",
+            "eyebrow" => "Full-Day Scotland Tour",
+
+            "heroImage" => "kelpies-sculptures-scotland.jpg",
+            "overviewImage" => "kelpies-sculptures-scotland.jpg",
+
+            "intro" => "Enjoy a full-day private tour from Edinburgh to The Kelpies and Stirling, combining historic landmarks, scenic photo stops and some of Scotland’s most famous heritage sites.",
+
+            "duration" => "Approximately 9 hours, including a lunch break",
+            "pickup" => "Pickup and drop-off in Edinburgh city centre",
+            "groupSize" => "Up to six passengers",
+            "photoStops" => "Historic landmarks, scenic views and photo stops",
+            "depositPercent" => 20,
+
+            "overviewTitle" => "Explore Edinburgh, The Kelpies and Stirling in one day",
+            "overviewText" => [
+                "This private full-day tour is ideal for guests who want to see a wider part of Scotland without needing to organise transport, routes or timings themselves.",
+                "The tour begins with selected Edinburgh highlights before continuing towards The Kelpies, Stirling and the surrounding historic landmarks.",
+                "It is a comfortable choice for families, friends and visitors who prefer a relaxed private journey with photo stops and flexible timing where possible."
+            ],
+
+            "fullDescriptionTitle" => "A full-day journey through Scottish history, scenery and landmarks",
+            "fullDescription" => [
+                "Begin your journey in Edinburgh, where the city’s ancient streets, castle views and historic landmarks introduce the story of Scotland’s capital.",
+                "The route can include views of Edinburgh Castle, the Royal Mile, St Giles’ Cathedral, Holyrood Palace, the Scottish Parliament, Arthur’s Seat and Calton Hill, depending on traffic, access and time available.",
+                "After exploring Edinburgh highlights, the journey continues towards The Kelpies at The Helix. These impressive horse-head sculptures are one of Scotland’s most recognisable modern landmarks and celebrate the country’s canal heritage and working horse history.",
+                "The tour then continues towards Stirling, an area strongly connected with Scotland’s national story. Stirling Castle and the nearby National Wallace Monument are important symbols of Scotland’s history and heritage.",
+                "The day can finish with a scenic return journey, including views of the Forth Bridges where possible. This creates a memorable full-day experience combining city views, modern landmarks and historic Scotland."
+            ],
+
+            "highlightsTitle" => "Historic and scenic highlights",
+            "highlightsText" => [
+                "This tour combines Edinburgh’s historic city views with some of Scotland’s most famous landmarks outside the capital.",
+                "You can enjoy The Kelpies, Stirling Castle, the National Wallace Monument and views of the Forth Bridges, with time for photos and short stops along the route."
+            ],
+
+            "itinerary" => [
+                "Edinburgh Castle viewpoint",
+                "Royal Mile",
+                "St Giles’ Cathedral",
+                "Holyrood Palace area",
+                "Scottish Parliament",
+                "Arthur’s Seat viewpoint",
+                "Calton Hill",
+                "The Helix: Home of The Kelpies",
+                "The National Wallace Monument",
+                "Stirling Castle",
+                "Forth Bridges"
+            ],
+
+            "pricing" => [
+                [
+                    "label" => "2–4 passengers",
+                    "price" => 380
+                ],
+                [
+                    "label" => "5–6 passengers",
+                    "price" => 440
+                ]
+            ],
+
+            "included" => [
+                "Private transport",
+                "Private driving tour",
+                "Door-to-door service where possible",
+                "Mineral water",
+                "Photo stops at selected locations"
+            ],
+
+            "notIncluded" => [
+                "Admission to attractions",
+                "Meals and drinks",
+                "Personal expenses",
+                "Additional time or extra stops unless agreed"
+            ],
+
+            "usefulInfo" => [
+                "Children must be accompanied by an adult.",
+                "Please be prepared for Scottish weather.",
+                "The route may be adjusted depending on traffic, access, weather and time available.",
+                "Attraction entry costs are not included in the tour price.",
+                "Lunch is not included in the tour price."
+            ]
+        ],
+    ];
 
 $slug = $_GET['tour'] ?? 'edinburgh-morning-half-day';
 
@@ -239,8 +327,7 @@ include __DIR__ . '/../includes/nav.php';
                     </p>
 
                     <p class="mb-2">
-                        Deposit from <strong>£<?= htmlspecialchars($depositAmount) ?></strong>
-                        to secure your booking.
+                        A <?= htmlspecialchars($tour['depositPercent']) ?>% deposit is required to secure your booking.
                     </p>
 
                     <p class="small text-muted">
@@ -340,7 +427,7 @@ include __DIR__ . '/../includes/nav.php';
                         </p>
 
                         <p class="small mb-0">
-                            Deposit: £<?= htmlspecialchars($deposit) ?>
+                            <?= htmlspecialchars($tour['depositPercent']) ?>% deposit required
                         </p>
                     </div>
                 </div>

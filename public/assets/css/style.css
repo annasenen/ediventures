@@ -607,8 +607,10 @@ section {
     position: sticky;
     top: 110px;
     background: #fff;
-    border-radius: 24px;
-    padding: 1.5rem;
+    border-radius: 22px;
+    padding: 1.25rem;
+    max-width: 430px;
+    margin-left: auto;
     box-shadow: 0 10px 35px rgba(0,0,0,0.08);
     border: 1px solid rgba(0,0,0,0.05);
 }
@@ -620,10 +622,10 @@ section {
 
 .feature-box {
     background: #fff;
-    border-radius: 20px;
-    padding: 1.25rem;
+    border-radius: 18px;
+    padding: 1rem;
     height: 100%;
-    box-shadow: 0 5px 20px rgba(0,0,0,0.05);
+    box-shadow: 0 5px 18px rgba(0,0,0,0.05);
     transition: 0.3s ease;
 }
 
@@ -632,14 +634,14 @@ section {
 }
 
 .feature-box i {
-    font-size: 1.8rem;
-    margin-bottom: 1rem;
-    color: var(--brand-green);
+    font-size: 1.5rem;
+    margin-bottom: 0.75rem;
+    color: var(--brand-color);
 }
 
 .feature-box h3 {
-    font-size: 1.1rem;
-    margin-bottom: 0.5rem;
+    font-size: 1rem;
+    margin-bottom: 0.35rem;
 }
 
 .details-box {
