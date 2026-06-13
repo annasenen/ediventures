@@ -41,7 +41,7 @@ include __DIR__ . '/../../includes/nav.php';
                     <span><i class="fa-solid fa-calendar-check"></i></span>
                     <h3>My Bookings</h3>
                     <p>View confirmed tours, airport transfers and future journeys.</p>
-                    <a href="#" class="text-link">Coming soon</a>
+                    <a href="/customer/my-bookings.php" class="text-link">View bookings</a>
                 </div>
             </div>
 

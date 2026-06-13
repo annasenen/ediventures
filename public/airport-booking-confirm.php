@@ -5,43 +5,47 @@ $pageTitle = "Confirm Airport Booking | EdiVentures";
 $metaDescription = "Confirm your airport transfer booking with EdiVentures.";
 $canonicalUrl = "https://www.ediventures.co.uk/airport-booking-confirm.php";
 
-if ($_SERVER["REQUEST_METHOD"] !== "POST") {
+if ($_SERVER["REQUEST_METHOD"] === "POST") {
+    $pendingBooking = [
+        "journey_type" => $_POST["journey_type"] ?? "",
+        "airport" => $_POST["airport"] ?? "",
+        "airport_name" => $_POST["airport_name"] ?? "",
+        "zone_name" => $_POST["zone_name"] ?? "",
+
+        "postcode" => $_POST["postcode"] ?? "",
+        "house_number" => $_POST["house_number"] ?? "",
+        "street" => $_POST["street"] ?? "",
+        "town_city" => $_POST["town_city"] ?? "",
+
+        "travel_date" => $_POST["travel_date"] ?? "",
+        "travel_hour" => $_POST["travel_hour"] ?? "",
+        "travel_minute" => $_POST["travel_minute"] ?? "",
+        "flight_number" => $_POST["flight_number"] ?? "",
+
+        "passengers" => $_POST["passengers"] ?? "",
+        "large_cases" => $_POST["large_cases"] ?? "",
+        "small_bags" => $_POST["small_bags"] ?? "",
+
+        "vehicle_id" => $_POST["vehicle_id"] ?? "",
+        "journey_start" => $_POST["journey_start"] ?? "",
+        "journey_end" => $_POST["journey_end"] ?? "",
+
+        "base_price" => $_POST["base_price"] ?? "0",
+        "airport_charge" => $_POST["airport_charge"] ?? "0",
+        "total_price" => $_POST["total_price"] ?? "0",
+        "deposit_amount" => $_POST["deposit_amount"] ?? "0",
+        "remaining_balance" => $_POST["remaining_balance"] ?? "0"
+    ];
+
+    $_SESSION["pending_airport_booking"] = $pendingBooking;
+
+} elseif (isset($_SESSION["pending_airport_booking"])) {
+    $pendingBooking = $_SESSION["pending_airport_booking"];
+
+} else {
     header("Location: /airport-booking.php");
     exit;
 }
-
-$pendingBooking = [
-    "journey_type" => $_POST["journey_type"] ?? "",
-    "airport" => $_POST["airport"] ?? "",
-    "airport_name" => $_POST["airport_name"] ?? "",
-    "zone_name" => $_POST["zone_name"] ?? "",
-
-    "postcode" => $_POST["postcode"] ?? "",
-    "house_number" => $_POST["house_number"] ?? "",
-    "street" => $_POST["street"] ?? "",
-    "town_city" => $_POST["town_city"] ?? "",
-
-    "travel_date" => $_POST["travel_date"] ?? "",
-    "travel_hour" => $_POST["travel_hour"] ?? "",
-    "travel_minute" => $_POST["travel_minute"] ?? "",
-    "flight_number" => $_POST["flight_number"] ?? "",
-
-    "passengers" => $_POST["passengers"] ?? "",
-    "large_cases" => $_POST["large_cases"] ?? "",
-    "small_bags" => $_POST["small_bags"] ?? "",
-
-    "vehicle_id" => $_POST["vehicle_id"] ?? "",
-    "journey_start" => $_POST["journey_start"] ?? "",
-    "journey_end" => $_POST["journey_end"] ?? "",
-
-    "base_price" => $_POST["base_price"] ?? "0",
-    "airport_charge" => $_POST["airport_charge"] ?? "0",
-    "total_price" => $_POST["total_price"] ?? "0",
-    "deposit_amount" => $_POST["deposit_amount"] ?? "0",
-    "remaining_balance" => $_POST["remaining_balance"] ?? "0"
-];
-
-$_SESSION["pending_airport_booking"] = $pendingBooking;
 
 include __DIR__ . '/../includes/header.php';
 include __DIR__ . '/../includes/nav.php';

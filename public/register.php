@@ -62,6 +62,11 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
                 $passwordHash
             ]);
 
+            if (isset($_GET["redirect"]) && $_GET["redirect"] === "airport-booking-confirm") {
+                header("Location: /login.php?redirect=airport-booking-confirm");
+                exit;
+            }
+
             $success = "Account created successfully. You can now log in.";
         }
     }
@@ -109,14 +114,14 @@ include __DIR__ . '/../includes/nav.php';
                     <?= htmlspecialchars($success) ?>
 
                     <div class="mt-3">
-                        <a href="/login.php" class="btn btn-brand rounded-pill px-4">
+                        <a href="<?= isset($_GET['redirect']) && $_GET['redirect'] === 'airport-booking-confirm' ? '/login.php?redirect=airport-booking-confirm' : '/login.php' ?>" class="btn btn-brand rounded-pill px-4">
                             Go to Login
                         </a>
                     </div>
                 </div>
             <?php endif; ?>
 
-            <form action="register.php" method="post">
+            <form action="<?= htmlspecialchars($_SERVER['REQUEST_URI']) ?>" method="post">
 
                 <div class="row g-3">
 
@@ -158,7 +163,7 @@ include __DIR__ . '/../includes/nav.php';
                     <div class="col-12">
                         <p class="mb-0">
                             Already have an account?
-                            <a href="/login.php" class="text-link">Log in here</a>
+                            <a href="<?= isset($_GET['redirect']) && $_GET['redirect'] === 'airport-booking-confirm' ? '/login.php?redirect=airport-booking-confirm' : '/login.php' ?>" class="text-link">Log in here</a>
                         </p>
                     </div>
 
