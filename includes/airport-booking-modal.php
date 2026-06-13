@@ -12,7 +12,7 @@
             </div>
 
             <div class="modal-body">
-                <form action="#" method="post" id="airportBookingForm">
+                <form action="/airport-booking-check.php" method="post" id="airportBookingForm">
 
                     <div class="mb-4">
                         <label class="form-label fw-bold">Journey type</label>
@@ -50,7 +50,7 @@
                     <div class="row g-3">
                         <div class="col-md-8">
                             <label class="form-label fw-bold">Postcode</label>
-                            <input type="text" class="form-control text-uppercase" name="postcode" placeholder="Example: EH30 9PP" required>
+                            <input type="text" class="form-control text-uppercase" name="postcode" placeholder="Example: EH30 9PP" maxlength="10" required>
                         </div>
 
                         <div class="col-md-4 d-flex align-items-end">

@@ -722,6 +722,33 @@ section {
     max-width: 700px;
 }
 
+/* =========================================
+   CUSTOMER ACCOUNT PAGES
+========================================= */
+
+.account-header {
+    padding-top: 3rem;
+    padding-bottom: 3rem;
+    background-position: center;
+    background-size: cover;
+}
+
+.account-header .page-title {
+    font-size: clamp(1.8rem, 3vw, 2.6rem);
+}
+
+.account-header .page-hero-text {
+    font-size: 1rem;
+    max-width: 720px;
+}
+
+@media (max-width: 768px) {
+    .account-header {
+        padding-top: 2.5rem;
+        padding-bottom: 2.5rem;
+    }
+}
+
 @media (max-width: 991px) {
 
     .tour-booking-summary {
