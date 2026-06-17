@@ -47,6 +47,21 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
                 exit;
             }
 
+            $roleSql = "SELECT r.roleName
+                        FROM customer_roles cr
+                        JOIN roles r ON cr.roleID = r.roleID
+                        WHERE cr.customerID = ?";
+
+            $roleStmt = $pdo->prepare($roleSql);
+            $roleStmt->execute([$customer["customerID"]]);
+
+            $userRoles = $roleStmt->fetchAll(PDO::FETCH_COLUMN);
+
+            if (in_array("admin", $userRoles, true)) {
+                header("Location: /admin/dashboard.php");
+                exit;
+            }
+
             header("Location: /customer/dashboard.php");
             exit;
         }

@@ -62,6 +62,23 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
                 $passwordHash
             ]);
 
+            $newCustomerID = $pdo->lastInsertId();
+
+            $roleSql = "SELECT roleID FROM roles WHERE roleName = ?";
+            $roleStmt = $pdo->prepare($roleSql);
+            $roleStmt->execute(["customer"]);
+            $customerRole = $roleStmt->fetch(PDO::FETCH_ASSOC);
+
+            if ($customerRole) {
+                $assignRoleSql = "INSERT INTO customer_roles (customerID, roleID)
+                                VALUES (?, ?)";
+                $assignRoleStmt = $pdo->prepare($assignRoleSql);
+                $assignRoleStmt->execute([
+                    $newCustomerID,
+                    $customerRole["roleID"]
+                ]);
+            }
+
             if (isset($_GET["redirect"]) && $_GET["redirect"] === "airport-booking-confirm") {
                 header("Location: /login.php?redirect=airport-booking-confirm");
                 exit;

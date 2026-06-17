@@ -118,9 +118,13 @@ if (empty($errors)) {
 
 if (empty($errors)) {
     $vehicleSql = "SELECT *
-                   FROM vehicles
-                   WHERE isActive = 1
-                   ORDER BY vehicleID ASC";
+                    FROM vehicles
+                    WHERE isActive = 1
+                    AND isArchived = 0
+                    ORDER BY isPrimaryVehicle DESC,
+                                passengerCapacity ASC,
+                                vehiclePriority ASC,
+                                vehicleID ASC";
 
     $vehicleStmt = $pdo->query($vehicleSql);
     $vehicles = $vehicleStmt->fetchAll(PDO::FETCH_ASSOC);
@@ -187,18 +191,20 @@ if (empty($errors)) {
 
 if (empty($errors)) {
     $priceSql = "SELECT basePrice
-                 FROM airport_pricing
-                 WHERE airportName = ?
-                 AND zoneName = ?
-                 AND journeyType = ?
-                 AND isActive = 1
-                 LIMIT 1";
+                FROM airport_pricing
+                WHERE airportName = ?
+                AND zoneName = ?
+                AND journeyType = ?
+                AND vehicleID = ?
+                AND isActive = 1
+                LIMIT 1";
 
     $priceStmt = $pdo->prepare($priceSql);
     $priceStmt->execute([
         $airportName,
         $zoneName,
-        $journeyType
+        $journeyType,
+        $availableVehicle["vehicleID"]
     ]);
 
     $priceRow = $priceStmt->fetch(PDO::FETCH_ASSOC);

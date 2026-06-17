@@ -4,6 +4,14 @@ COLLATE utf8mb4_unicode_ci;
 
 USE ediventures_db;
 
+DROP TABLE IF EXISTS bookings;
+DROP TABLE IF EXISTS vehicle_blocks;
+DROP TABLE IF EXISTS airport_charges;
+DROP TABLE IF EXISTS airport_pricing;
+DROP TABLE IF EXISTS vehicles;
+DROP TABLE IF EXISTS custom_tour_requests;
+DROP TABLE IF EXISTS customer_roles;
+DROP TABLE IF EXISTS roles;
 DROP TABLE IF EXISTS customers;
 
 CREATE TABLE customers (
@@ -16,7 +24,31 @@ CREATE TABLE customers (
     createdAt DATETIME DEFAULT CURRENT_TIMESTAMP
 );
 
-DROP TABLE IF EXISTS custom_tour_requests;
+
+CREATE TABLE roles (
+    roleID INT AUTO_INCREMENT PRIMARY KEY,
+    roleName VARCHAR(50) NOT NULL UNIQUE
+);
+
+CREATE TABLE customer_roles (
+    customerRoleID INT AUTO_INCREMENT PRIMARY KEY,
+    customerID INT NOT NULL,
+    roleID INT NOT NULL,
+
+    UNIQUE (customerID, roleID),
+
+    FOREIGN KEY (customerID) REFERENCES customers(customerID)
+        ON DELETE CASCADE,
+
+    FOREIGN KEY (roleID) REFERENCES roles(roleID)
+        ON DELETE CASCADE
+);
+
+INSERT INTO roles (roleName)
+VALUES
+('customer'),
+('admin');
+
 
 CREATE TABLE custom_tour_requests (
     requestID INT AUTO_INCREMENT PRIMARY KEY,
@@ -46,16 +78,24 @@ CREATE TABLE vehicles (
     vehicleName VARCHAR(100) NOT NULL,
     passengerCapacity INT NOT NULL DEFAULT 6,
     isActive TINYINT(1) DEFAULT 1,
-    minimumNoticeHours INT DEFAULT 0
+    isArchived TINYINT(1) DEFAULT 0,
+    isPrimaryVehicle TINYINT(1) DEFAULT 0,
+    minimumNoticeHours INT DEFAULT 1,
+    vehiclePriority INT DEFAULT 1,
+    createdAt DATETIME DEFAULT CURRENT_TIMESTAMP
 );
 
 CREATE TABLE airport_pricing (
     airportPriceID INT AUTO_INCREMENT PRIMARY KEY,
+    vehicleID INT NOT NULL,
     airportName VARCHAR(100) NOT NULL,
     zoneName VARCHAR(50) NOT NULL,
     journeyType VARCHAR(30) NOT NULL,
     basePrice DECIMAL(10,2) NOT NULL,
-    isActive TINYINT(1) DEFAULT 1
+    isActive TINYINT(1) DEFAULT 1,
+
+    FOREIGN KEY (vehicleID) REFERENCES vehicles(vehicleID)
+        ON DELETE CASCADE
 );
 
 CREATE TABLE airport_charges (
