@@ -1,4 +1,5 @@
 <?php
+
 session_start();
 
 $pageTitle = "Airport Booking Check | EdiVentures";
@@ -6,35 +7,131 @@ $metaDescription = "Check airport transfer availability with EdiVentures.";
 $canonicalUrl = "https://www.ediventures.co.uk/airport-booking-check.php";
 
 require_once __DIR__ . '/../config/database.php';
+require_once __DIR__ . '/../app/Services/VehicleAvailabilityService.php';
+require_once __DIR__ . '/../app/Services/AirportPricingService.php';
 
 $errors = [];
+
 $availableVehicle = null;
-$basePrice = null;
+
+$basePrice = 0.00;
 $airportCharge = 0.00;
 $totalPrice = 0.00;
 $depositAmount = 0.00;
 $remainingBalance = 0.00;
 
-if ($_SERVER["REQUEST_METHOD"] !== "POST") {
-    header("Location: /airport-booking.php");
+$journeyType = "";
+$airportCode = "";
+$postcode = "";
+$houseNumber = "";
+$street = "";
+$townCity = "";
+$travelDate = "";
+$travelHour = "";
+$travelMinute = "";
+$flightNumber = "";
+$passengers = "";
+$largeCases = "";
+$smallBags = "";
+$oversizedLuggage = "";
+$extraStop = "";
+
+$journeyStart = null;
+$journeyEnd = null;
+$zoneName = "";
+
+$isResume = (
+    isset($_GET["resume"]) &&
+    $_GET["resume"] === "1"
+);
+
+/*
+|--------------------------------------------------------------------------
+| LOAD BOOKING REQUEST
+|--------------------------------------------------------------------------
+|
+| A new booking arrives by POST.
+|
+| After login/register, the customer returns using ?resume=1 and the
+| original journey data is loaded from the PHP session.
+|
+*/
+
+if ($_SERVER["REQUEST_METHOD"] === "POST") {
+
+    $journeyType = $_POST["journey_type"] ?? "";
+    $airportCode = $_POST["airport"] ?? "";
+    $postcode = strtoupper(trim($_POST["postcode"] ?? ""));
+    $houseNumber = trim($_POST["house_number"] ?? "");
+    $street = trim($_POST["street"] ?? "");
+    $townCity = trim($_POST["town_city"] ?? "");
+    $travelDate = $_POST["travel_date"] ?? "";
+    $travelHour = $_POST["travel_hour"] ?? "";
+    $travelMinute = $_POST["travel_minute"] ?? "";
+    $flightNumber = strtoupper(trim($_POST["flight_number"] ?? ""));
+    $passengers = $_POST["passengers"] ?? "";
+    $largeCases = $_POST["large_cases"] ?? "";
+    $smallBags = $_POST["small_bags"] ?? "";
+    $oversizedLuggage = $_POST["oversized_luggage"] ?? "";
+    $extraStop = $_POST["extra_stop"] ?? "";
+
+    $_SESSION["airport_booking_draft"] = [
+    "journey_type" => $journeyType,
+    "airport" => $airportCode,
+    "postcode" => $postcode,
+    "house_number" => $houseNumber,
+    "street" => $street,
+    "town_city" => $townCity,
+    "travel_date" => $travelDate,
+    "travel_hour" => $travelHour,
+    "travel_minute" => $travelMinute,
+    "flight_number" => $flightNumber,
+    "passengers" => $passengers,
+    "large_cases" => $largeCases,
+    "small_bags" => $smallBags,
+    "oversized_luggage" => $oversizedLuggage,
+    "extra_stop" => $extraStop
+];
+
+} elseif (
+    $isResume &&
+    isset($_SESSION["pending_airport_booking"])
+) {
+
+    $savedBooking = $_SESSION["pending_airport_booking"];
+
+    $journeyType = $savedBooking["journey_type"] ?? "";
+    $airportCode = $savedBooking["airport"] ?? "";
+    $postcode = $savedBooking["postcode"] ?? "";
+    $houseNumber = $savedBooking["house_number"] ?? "";
+    $street = $savedBooking["street"] ?? "";
+    $townCity = $savedBooking["town_city"] ?? "";
+    $travelDate = $savedBooking["travel_date"] ?? "";
+    $travelHour = $savedBooking["travel_hour"] ?? "";
+    $travelMinute = $savedBooking["travel_minute"] ?? "";
+    $flightNumber = $savedBooking["flight_number"] ?? "";
+    $passengers = $savedBooking["passengers"] ?? "";
+    $largeCases = $savedBooking["large_cases"] ?? "";
+    $smallBags = $savedBooking["small_bags"] ?? "";
+
+    /*
+     * These were already checked before the customer was sent
+     * to login/register.
+     */
+    $oversizedLuggage = "no";
+    $extraStop = "no";
+
+} else {
+
+    header("Location: //airport-transfers.php");
     exit;
 }
 
-$journeyType = $_POST["journey_type"] ?? "";
-$airportCode = $_POST["airport"] ?? "";
-$postcode = strtoupper(trim($_POST["postcode"] ?? ""));
-$houseNumber = trim($_POST["house_number"] ?? "");
-$street = trim($_POST["street"] ?? "");
-$townCity = trim($_POST["town_city"] ?? "");
-$travelDate = $_POST["travel_date"] ?? "";
-$travelHour = $_POST["travel_hour"] ?? "";
-$travelMinute = $_POST["travel_minute"] ?? "";
-$flightNumber = strtoupper(trim($_POST["flight_number"] ?? ""));
-$passengers = $_POST["passengers"] ?? "";
-$largeCases = $_POST["large_cases"] ?? "";
-$smallBags = $_POST["small_bags"] ?? "";
-$oversizedLuggage = $_POST["oversized_luggage"] ?? "";
-$extraStop = $_POST["extra_stop"] ?? "";
+/*
+|--------------------------------------------------------------------------
+| AIRPORT INFORMATION
+|--------------------------------------------------------------------------
+*/
 
 $airportNames = [
     "edinburgh" => "Edinburgh Airport",
@@ -46,7 +143,13 @@ $airportNames = [
 
 $airportName = $airportNames[$airportCode] ?? "";
 
-if ($journeyType === "") {
+/*
+|--------------------------------------------------------------------------
+| SERVER-SIDE VALIDATION
+|--------------------------------------------------------------------------
+*/
+
+if (!in_array($journeyType, ["pickup", "dropoff"], true)) {
     $errors[] = "Please choose airport pickup or drop-off.";
 }
 
@@ -54,15 +157,24 @@ if ($airportName === "") {
     $errors[] = "This airport needs manual confirmation. Please request a quote.";
 }
 
-if ($postcode === "" || $houseNumber === "" || $street === "" || $townCity === "") {
+if (
+    $postcode === "" ||
+    $houseNumber === "" ||
+    $street === "" ||
+    $townCity === ""
+) {
     $errors[] = "Please enter the full journey address.";
 }
 
-if ($travelDate === "" || $travelHour === "" || $travelMinute === "") {
+if (
+    $travelDate === "" ||
+    $travelHour === "" ||
+    $travelMinute === ""
+) {
     $errors[] = "Please choose travel date and time.";
 }
 
-if ($passengers === "") {
+if ($passengers === "" || (int)$passengers < 1) {
     $errors[] = "Please choose number of passengers.";
 }
 
@@ -74,20 +186,52 @@ if ($oversizedLuggage === "yes" || $extraStop === "yes") {
     $errors[] = "This booking needs manual confirmation because of oversized luggage, unusual items or an extra stop.";
 }
 
-$journeyStart = null;
-$journeyEnd = null;
-$zoneName = "";
+/*
+|--------------------------------------------------------------------------
+| BUILD JOURNEY DATE/TIME
+|--------------------------------------------------------------------------
+*/
 
 if (empty($errors)) {
-    $journeyStartText = $travelDate . " " . $travelHour . ":" . $travelMinute . ":00";
-    $journeyStart = DateTime::createFromFormat("Y-m-d H:i:s", $journeyStartText);
+
+    $journeyStartText =
+        $travelDate . " " .
+        $travelHour . ":" .
+        $travelMinute . ":00";
+
+    $londonTimezone = new DateTimeZone('Europe/London');
+
+    $journeyStart = DateTime::createFromFormat(
+        "Y-m-d H:i:s",
+        $journeyStartText,
+        $londonTimezone
+    );
 
     if (!$journeyStart) {
         $errors[] = "Invalid travel date or time.";
+    } else {
+        $journeyStart->setTimezone(
+            new DateTimeZone('UTC')
+        );
     }
 }
 
+/*
+|--------------------------------------------------------------------------
+| TEMPORARY JOURNEY BLOCK + ZONE LOGIC
+|--------------------------------------------------------------------------
+|
+| We will later move these rules into database/admin-controlled services.
+|
+*/
+
 if (empty($errors)) {
+
+    /*
+     * Temporary blocking rule:
+     * Edinburgh = 2 hours
+     * Other airports = 3 hours
+     */
     $blockHours = 2;
 
     if ($airportCode !== "edinburgh") {
@@ -97,7 +241,14 @@ if (empty($errors)) {
     $journeyEnd = clone $journeyStart;
     $journeyEnd->modify("+{$blockHours} hours");
 
-    $cleanPostcode = strtoupper(str_replace(' ', '', $postcode));
+    /*
+     * Temporary postcode-zone logic.
+     * This will later be replaced by admin-controlled zones/address API.
+     */
+    $cleanPostcode = strtoupper(
+        preg_replace('/\s+/', '', $postcode)
+    );
+
     $postcodePrefix4 = substr($cleanPostcode, 0, 4);
 
     if (
@@ -106,137 +257,166 @@ if (empty($errors)) {
         $postcodePrefix4 === "EH28"
     ) {
         $zoneName = "Zone A";
+
     } elseif (
         $postcodePrefix4 === "EH12" ||
         $postcodePrefix4 === "KY11"
     ) {
         $zoneName = "Zone B";
+
     } else {
         $errors[] = "This postcode is outside the current automatic booking zones. Please request a quote.";
     }
 }
 
+/*
+|--------------------------------------------------------------------------
+| VEHICLE AVAILABILITY SERVICE
+|--------------------------------------------------------------------------
+*/
+
 if (empty($errors)) {
-    $vehicleSql = "SELECT *
-                    FROM vehicles
-                    WHERE isActive = 1
-                    AND isArchived = 0
-                    ORDER BY isPrimaryVehicle DESC,
-                                passengerCapacity ASC,
-                                vehiclePriority ASC,
-                                vehicleID ASC";
 
-    $vehicleStmt = $pdo->query($vehicleSql);
-    $vehicles = $vehicleStmt->fetchAll(PDO::FETCH_ASSOC);
+    try {
 
-    $now = new DateTime();
-    $journeyStartString = $journeyStart->format("Y-m-d H:i:s");
-    $journeyEndString = $journeyEnd->format("Y-m-d H:i:s");
+        $availabilityService =
+            new VehicleAvailabilityService($pdo);
 
-    foreach ($vehicles as $vehicle) {
-        $minimumNoticeHours = (int)$vehicle["minimumNoticeHours"];
+        $availableVehicle =
+            $availabilityService->findAvailableVehicle(
+                $journeyStart,
+                $journeyEnd,
+                (int)$passengers
+            );
 
-        $earliestAllowed = clone $now;
-        $earliestAllowed->modify("+{$minimumNoticeHours} hours");
-
-        if ($journeyStart < $earliestAllowed) {
-            continue;
+        if (!$availableVehicle) {
+            $errors[] = "Sorry, no vehicle is available for this date and time. Please choose another time or request a quote.";
         }
 
-        $blockSql = "SELECT blockID
-                     FROM vehicle_blocks
-                     WHERE vehicleID = ?
-                     AND blockStart < ?
-                     AND blockEnd > ?
-                     LIMIT 1";
-
-        $blockStmt = $pdo->prepare($blockSql);
-        $blockStmt->execute([
-            $vehicle["vehicleID"],
-            $journeyEndString,
-            $journeyStartString
-        ]);
-
-        if ($blockStmt->fetch()) {
-            continue;
-        }
-
-        $bookingSql = "SELECT bookingID
-                       FROM bookings
-                       WHERE vehicleID = ?
-                       AND status IN ('pending', 'confirmed')
-                       AND journeyStart < ?
-                       AND journeyEnd > ?
-                       LIMIT 1";
-
-        $bookingStmt = $pdo->prepare($bookingSql);
-        $bookingStmt->execute([
-            $vehicle["vehicleID"],
-            $journeyEndString,
-            $journeyStartString
-        ]);
-
-        if ($bookingStmt->fetch()) {
-            continue;
-        }
-
-        $availableVehicle = $vehicle;
-        break;
-    }
-
-    if (!$availableVehicle) {
-        $errors[] = "Sorry, no vehicle is available for this date and time. Please choose another time or request a quote.";
+    } catch (InvalidArgumentException $e) {
+        $errors[] = $e->getMessage();
     }
 }
 
+/*
+|--------------------------------------------------------------------------
+| AIRPORT PRICING SERVICE
+|--------------------------------------------------------------------------
+*/
+
 if (empty($errors)) {
-    $priceSql = "SELECT basePrice
-                FROM airport_pricing
-                WHERE airportName = ?
-                AND zoneName = ?
-                AND journeyType = ?
-                AND vehicleID = ?
-                AND isActive = 1
-                LIMIT 1";
 
-    $priceStmt = $pdo->prepare($priceSql);
-    $priceStmt->execute([
-        $airportName,
-        $zoneName,
-        $journeyType,
-        $availableVehicle["vehicleID"]
-    ]);
+    try {
 
-    $priceRow = $priceStmt->fetch(PDO::FETCH_ASSOC);
+        $pricingService =
+            new AirportPricingService($pdo);
 
-    if (!$priceRow) {
-        $errors[] = "Price is not available for this airport and zone yet. Please request a quote.";
-    } else {
-        $basePrice = (float)$priceRow["basePrice"];
+        $pricing =
+            $pricingService->getAirportBookingPrice(
+                (int)$availableVehicle["vehicleID"],
+                $airportName,
+                $zoneName,
+                $journeyType,
+                20
+            );
 
-        $chargeSql = "SELECT pickupCharge, dropoffCharge
-                      FROM airport_charges
-                      WHERE airportName = ?
-                      AND isActive = 1
-                      LIMIT 1";
+        if (!$pricing) {
 
-        $chargeStmt = $pdo->prepare($chargeSql);
-        $chargeStmt->execute([$airportName]);
+            $errors[] =
+                "Price is not available for this airport, vehicle and journey yet. Please request a quote.";
 
-        $chargeRow = $chargeStmt->fetch(PDO::FETCH_ASSOC);
+        } else {
 
-        if ($chargeRow) {
-            if ($journeyType === "pickup") {
-                $airportCharge = (float)$chargeRow["pickupCharge"];
-            } else {
-                $airportCharge = (float)$chargeRow["dropoffCharge"];
-            }
+            $basePrice = $pricing["basePrice"];
+            $airportCharge = $pricing["airportCharge"];
+            $totalPrice = $pricing["totalPrice"];
+            $depositAmount = $pricing["depositAmount"];
+            $remainingBalance = $pricing["remainingBalance"];
         }
 
-        $totalPrice = $basePrice + $airportCharge;
-        $depositAmount = round($totalPrice * 0.20, 2);
-        $remainingBalance = $totalPrice - $depositAmount;
+    } catch (InvalidArgumentException $e) {
+        $errors[] = $e->getMessage();
     }
+}
+
+/*
+|--------------------------------------------------------------------------
+| SAVE SUCCESSFUL QUOTE IN SESSION
+|--------------------------------------------------------------------------
+|
+| This means login/register cannot lose the journey.
+|
+| When the customer returns after login we run the availability and pricing
+| services again, so we do NOT blindly trust the old vehicle/price.
+|
+*/
+
+if (empty($errors)) {
+
+    $_SESSION["pending_airport_booking"] = [
+
+        "journey_type" => $journeyType,
+
+        "airport" => $airportCode,
+        "airport_name" => $airportName,
+
+        /*
+         * Zone stays internal.
+         * We need it for booking/pricing but do not display it.
+         */
+        "zone_name" => $zoneName,
+
+        "postcode" => $postcode,
+        "house_number" => $houseNumber,
+        "street" => $street,
+        "town_city" => $townCity,
+
+        "travel_date" => $travelDate,
+        "travel_hour" => $travelHour,
+        "travel_minute" => $travelMinute,
+
+        "flight_number" => $flightNumber,
+
+        "passengers" => $passengers,
+        "large_cases" => $largeCases,
+        "small_bags" => $smallBags,
+
+        /*
+         * These values are freshly calculated by our services.
+         */
+        "vehicle_id" => $availableVehicle["vehicleID"],
+
+        "journey_start" =>
+            $journeyStart->format("Y-m-d H:i:s"),
+
+        "journey_end" =>
+            $journeyEnd->format("Y-m-d H:i:s"),
+
+        "base_price" => $basePrice,
+        "airport_charge" => $airportCharge,
+        "total_price" => $totalPrice,
+        "deposit_amount" => $depositAmount,
+        "remaining_balance" => $remainingBalance
+    ];
+
+    /*
+     * If login becomes necessary, tell the authentication flow exactly
+     * where this customer should return.
+     */
+    if (!isset($_SESSION["customerID"])) {
+        $_SESSION["after_login_redirect"] =
+            "/airport-booking-check.php?resume=1";
+    }
+}
+
+$displayJourneyStart = null;
+
+if ($journeyStart instanceof DateTimeInterface) {
+    $displayJourneyStart = DateTimeImmutable::createFromInterface(
+        $journeyStart
+    )->setTimezone(
+        new DateTimeZone('Europe/London')
+    );
 }
 
 include __DIR__ . '/../includes/header.php';
@@ -247,149 +427,378 @@ include __DIR__ . '/../includes/nav.php';
 
 <section class="account-header text-white"
     style="background: linear-gradient(rgba(0,0,0,0.72), rgba(0,0,0,0.72)), url('/assets/img/passenger-plane-airport-transfer.jpg') center/cover no-repeat;">
+
     <div class="container">
+
         <div class="row align-items-center">
+
             <div class="col-lg-8">
-                <p class="eyebrow mb-3">Airport Transfer</p>
-                <h1 class="page-title">Airport Booking Check</h1>
-                <p class="page-hero-text">
-                    We check vehicle availability before showing the booking summary.
+
+                <p class="eyebrow mb-3">
+                    Airport Transfer
                 </p>
+
+                <h1 class="page-title">
+                    Your Airport Transfer
+                </h1>
+
+                <p class="page-hero-text">
+                    Check your journey details and price before securing your booking.
+                </p>
+
             </div>
+
         </div>
+
     </div>
+
 </section>
 
+
 <section class="py-5 bg-light">
+
     <div class="container">
 
         <?php if (!empty($errors)): ?>
 
             <div class="booking-form-card mx-auto">
-                <h2 class="section-title mb-3">Booking not available online</h2>
+
+                <h2 class="section-title mb-3">
+                    Booking not available online
+                </h2>
 
                 <div class="alert alert-warning">
+
                     <ul class="mb-0">
+
                         <?php foreach ($errors as $error): ?>
-                            <li><?= htmlspecialchars($error) ?></li>
+
+                            <li>
+                                <?= htmlspecialchars($error) ?>
+                            </li>
+
                         <?php endforeach; ?>
+
                     </ul>
+
                 </div>
 
                 <div class="d-flex flex-column flex-sm-row gap-3 mt-4">
-                    <a href="/airport-booking.php" class="btn btn-brand rounded-pill px-4">
-                        Try Another Date or Time
+
+                    <a
+                        href="/airport-transfers.php?edit=1"
+                        class="btn btn-brand rounded-pill px-4"
+                    >
+                        Change Journey
                     </a>
 
-                    <a href="/quote.php" class="btn btn-outline-dark rounded-pill px-4">
+                    <a
+                        href="/quote.php"
+                        class="btn btn-outline-dark rounded-pill px-4"
+                    >
                         Request a Quote
                     </a>
+
                 </div>
+
             </div>
+
 
         <?php else: ?>
 
+
             <div class="booking-form-card mx-auto">
-                <h2 class="section-title mb-3">Vehicle available</h2>
 
                 <div class="alert alert-success">
-                    Good news. We have availability for this airport transfer.
+
+                    <i class="fa-solid fa-circle-check me-2"></i>
+
+                    This journey is currently available.
+
                 </div>
+
+
+                <!-- YOUR JOURNEY -->
 
                 <div class="custom-tour-box mb-4">
-                    <h3>Journey Summary</h3>
 
-                    <p><strong>Journey type:</strong> <?= htmlspecialchars(ucfirst($journeyType)) ?></p>
-                    <p><strong>Airport:</strong> <?= htmlspecialchars($airportName) ?></p>
-                    <p><strong>Zone:</strong> <?= htmlspecialchars($zoneName) ?></p>
-                    <p><strong>Date and time:</strong> <?= htmlspecialchars($journeyStart->format("d/m/Y H:i")) ?></p>
-                    <p><strong>Address:</strong> <?= htmlspecialchars($houseNumber . ", " . $street . ", " . $townCity . ", " . $postcode) ?></p>
-                    <p><strong>Passengers:</strong> <?= htmlspecialchars($passengers) ?></p>
-                    <p><strong>Luggage:</strong> <?= htmlspecialchars($largeCases) ?> large suitcase(s), <?= htmlspecialchars($smallBags) ?> small bag(s)</p>
+                    <div class="d-flex justify-content-between align-items-start gap-3 mb-3">
 
-                    <?php if ($flightNumber !== ""): ?>
-                        <p><strong>Flight number:</strong> <?= htmlspecialchars($flightNumber) ?></p>
-                    <?php endif; ?>
-                </div>
+                        <h2 class="section-title mb-0">
+                            Your Journey
+                        </h2>
 
-                <div class="custom-tour-box mb-4">
-                    <h3>Booking Summary</h3>
-
-                    <table class="table">
-                        <tr>
-                            <td>Journey Price</td>
-                            <td class="text-end">£<?= number_format($basePrice, 2) ?></td>
-                        </tr>
-
-                        <tr>
-                            <td>Airport Charge</td>
-                            <td class="text-end">£<?= number_format($airportCharge, 2) ?></td>
-                        </tr>
-
-                        <tr class="fw-bold">
-                            <td>Total Price</td>
-                            <td class="text-end">£<?= number_format($totalPrice, 2) ?></td>
-                        </tr>
-
-                        <tr>
-                            <td>Deposit Due Today (20%)</td>
-                            <td class="text-end">£<?= number_format($depositAmount, 2) ?></td>
-                        </tr>
-
-                        <tr>
-                            <td>Balance Payable to Driver</td>
-                            <td class="text-end">£<?= number_format($remainingBalance, 2) ?></td>
-                        </tr>
-                    </table>
-                </div>
-
-                <form action="/airport-booking-confirm.php" method="post">
-
-                    <input type="hidden" name="journey_type" value="<?= htmlspecialchars($journeyType) ?>">
-                    <input type="hidden" name="airport" value="<?= htmlspecialchars($airportCode) ?>">
-                    <input type="hidden" name="airport_name" value="<?= htmlspecialchars($airportName) ?>">
-                    <input type="hidden" name="zone_name" value="<?= htmlspecialchars($zoneName) ?>">
-
-                    <input type="hidden" name="postcode" value="<?= htmlspecialchars($postcode) ?>">
-                    <input type="hidden" name="house_number" value="<?= htmlspecialchars($houseNumber) ?>">
-                    <input type="hidden" name="street" value="<?= htmlspecialchars($street) ?>">
-                    <input type="hidden" name="town_city" value="<?= htmlspecialchars($townCity) ?>">
-
-                    <input type="hidden" name="travel_date" value="<?= htmlspecialchars($travelDate) ?>">
-                    <input type="hidden" name="travel_hour" value="<?= htmlspecialchars($travelHour) ?>">
-                    <input type="hidden" name="travel_minute" value="<?= htmlspecialchars($travelMinute) ?>">
-                    <input type="hidden" name="flight_number" value="<?= htmlspecialchars($flightNumber) ?>">
-
-                    <input type="hidden" name="passengers" value="<?= htmlspecialchars($passengers) ?>">
-                    <input type="hidden" name="large_cases" value="<?= htmlspecialchars($largeCases) ?>">
-                    <input type="hidden" name="small_bags" value="<?= htmlspecialchars($smallBags) ?>">
-
-                    <input type="hidden" name="vehicle_id" value="<?= htmlspecialchars($availableVehicle["vehicleID"]) ?>">
-                    <input type="hidden" name="journey_start" value="<?= htmlspecialchars($journeyStart->format("Y-m-d H:i:s")) ?>">
-                    <input type="hidden" name="journey_end" value="<?= htmlspecialchars($journeyEnd->format("Y-m-d H:i:s")) ?>">
-
-                    <input type="hidden" name="base_price" value="<?= htmlspecialchars($basePrice) ?>">
-                    <input type="hidden" name="airport_charge" value="<?= htmlspecialchars($airportCharge) ?>">
-                    <input type="hidden" name="total_price" value="<?= htmlspecialchars($totalPrice) ?>">
-                    <input type="hidden" name="deposit_amount" value="<?= htmlspecialchars($depositAmount) ?>">
-                    <input type="hidden" name="remaining_balance" value="<?= htmlspecialchars($remainingBalance) ?>">
-
-                    <div class="d-flex flex-column flex-sm-row gap-3">
-                        <button type="submit" class="btn btn-brand btn-lg rounded-pill px-5">
-                            Continue to Secure Booking
-                        </button>
-
-                        <a href="/airport-booking.php" class="btn btn-outline-dark btn-lg rounded-pill px-5">
-                            Change Details
+                        <a
+                            href="/airport-transfers.php?edit=1"
+                            class="btn btn-sm btn-outline-dark rounded-pill px-3"
+                        >
+                            <i class="fa-solid fa-pen me-1"></i>
+                            Change
                         </a>
+
                     </div>
 
-                </form>
+
+                    <p class="mb-2">
+
+                        <strong>
+                            <?= htmlspecialchars($airportName) ?>
+                            <?= $journeyType === "pickup" ? "Pickup" : "Drop-off" ?>
+                        </strong>
+
+                    </p>
+
+
+                    <p class="mb-2">
+
+                        <i class="fa-regular fa-calendar me-2"></i>
+
+                        <?= htmlspecialchars(
+                            $displayJourneyStart->format("d/m/Y")
+                        ) ?>
+
+                        at
+
+                        <?= htmlspecialchars(
+                            $displayJourneyStart->format("H:i")
+                        ) ?>
+
+                    </p>
+
+
+                    <p class="mb-2">
+
+                        <i class="fa-solid fa-location-dot me-2"></i>
+
+                        <?= htmlspecialchars(
+                            $houseNumber . ", " .
+                            $street . ", " .
+                            $townCity . ", " .
+                            $postcode
+                        ) ?>
+
+                    </p>
+
+
+                    <p class="mb-2">
+
+                        <i class="fa-solid fa-user-group me-2"></i>
+
+                        <?= htmlspecialchars($passengers) ?>
+                        passenger<?= (int)$passengers === 1 ? "" : "s" ?>
+
+                    </p>
+
+
+                    <p class="mb-0">
+
+                        <i class="fa-solid fa-suitcase me-2"></i>
+
+                        <?= htmlspecialchars($largeCases) ?>
+                        large suitcase(s),
+
+                        <?= htmlspecialchars($smallBags) ?>
+                        small bag(s)
+
+                    </p>
+
+
+                    <?php if ($flightNumber !== ""): ?>
+
+                        <p class="mt-2 mb-0">
+
+                            <strong>Flight:</strong>
+
+                            <?= htmlspecialchars($flightNumber) ?>
+
+                        </p>
+
+                    <?php endif; ?>
+
+                </div>
+
+
+                <!-- PRICE -->
+
+                <div class="custom-tour-box mb-4">
+
+                    <h2 class="section-title mb-3">
+                        Price
+                    </h2>
+
+
+                    <table class="table align-middle mb-0">
+
+                        <tbody>
+
+                            <tr>
+
+                                <td>
+
+                                    <strong>Journey price</strong>
+
+                                    <div class="small text-muted">
+                                        Private hire journey for your selected route.
+                                    </div>
+
+                                </td>
+
+                                <td class="text-end">
+                                    £<?= number_format($basePrice, 2) ?>
+                                </td>
+
+                            </tr>
+
+
+                            <tr>
+
+                                <td>
+
+                                    <strong>Airport charge</strong>
+
+                                    <div class="small text-muted">
+                                        Charge applied by the airport for pickup or drop-off access.
+                                    </div>
+
+                                </td>
+
+                                <td class="text-end">
+                                    £<?= number_format($airportCharge, 2) ?>
+                                </td>
+
+                            </tr>
+
+
+                            <tr class="fw-bold">
+
+                                <td class="fs-5">
+                                    Total
+                                </td>
+
+                                <td class="text-end fs-5">
+                                    £<?= number_format($totalPrice, 2) ?>
+                                </td>
+
+                            </tr>
+
+
+                            <tr>
+
+                                <td>
+
+                                    <strong>Pay today — 20% deposit</strong>
+
+                                    <div class="small text-muted">
+                                        Secures your booking.
+                                    </div>
+
+                                </td>
+
+                                <td class="text-end fw-bold">
+                                    £<?= number_format($depositAmount, 2) ?>
+                                </td>
+
+                            </tr>
+
+
+                            <tr>
+
+                                <td>
+
+                                    <strong>Balance to driver</strong>
+
+                                    <div class="small text-muted">
+                                        Remaining amount payable on the day.
+                                    </div>
+
+                                </td>
+
+                                <td class="text-end">
+                                    £<?= number_format($remainingBalance, 2) ?>
+                                </td>
+
+                            </tr>
+
+                        </tbody>
+
+                    </table>
+
+                </div>
+
+
+                <!-- CUSTOMER ACTION -->
+
+                <?php if (!isset($_SESSION["customerID"])): ?>
+
+                    <div class="alert alert-info">
+
+                        <strong>Ready to book?</strong>
+
+                        Log in or create an account to continue.
+                        Your journey is saved while you sign in.
+
+                    </div>
+
+
+                    <div class="d-flex flex-column flex-sm-row gap-3">
+
+                        <a
+                            href="/login.php"
+                            class="btn btn-brand btn-lg rounded-pill px-5"
+                        >
+                            Log In to Continue
+                        </a>
+
+                        <a
+                            href="/register.php"
+                            class="btn btn-outline-dark btn-lg rounded-pill px-5"
+                        >
+                            Create Account
+                        </a>
+
+                    </div>
+
+
+                <?php else: ?>
+
+
+                    <div class="alert alert-success">
+
+                        Logged in as
+
+                        <strong>
+                            <?= htmlspecialchars(
+                                $_SESSION["customerName"]
+                            ) ?>
+                        </strong>.
+
+                    </div>
+
+
+                    <form
+                        action="/airport-booking-save.php"
+                        method="post"
+                    >
+
+                        <button
+                            type="submit"
+                            class="btn btn-brand btn-lg rounded-pill px-5"
+                        >
+                            Proceed to Deposit Payment
+                        </button>
+
+                    </form>
+
+
+                <?php endif; ?>
+
             </div>
+
 
         <?php endif; ?>
 
     </div>
+
 </section>
 
 </main>

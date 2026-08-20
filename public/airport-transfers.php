@@ -1,4 +1,9 @@
 <?php
+
+session_start();
+
+$bookingDraft = $_SESSION["airport_booking_draft"] ?? [];
+
 $pageTitle = "Airport Transfers Scotland | EdiVentures Private Hire";
 $metaDescription = "Book reliable airport transfers with EdiVentures from South Queensferry, Edinburgh and selected nearby areas. Comfortable private hire journeys for airport pickups and drop-offs.";
 $canonicalUrl = "https://www.ediventures.co.uk/airport-transfers";
@@ -20,7 +25,15 @@ include __DIR__ . '/../includes/nav.php';
                         South Queensferry, Edinburgh and selected nearby areas.
                     </p>
                     <div class="d-flex flex-column flex-sm-row gap-3 mt-4">
-                        <a href="/airport-booking.php" class="btn btn-brand btn-lg rounded-pill px-4">Book Airport Transfer</a>
+                        <button
+                            type="button"
+                            class="btn btn-brand btn-lg rounded-pill px-4 airport-booking-trigger"
+                            data-bs-toggle="modal"
+                            data-bs-target="#airportBookingModal"
+                            data-journey-type=""
+                        >
+                            Book Airport Transfer
+                        </button>
                         <a href="/quote.php" class="btn btn-outline-light btn-lg rounded-pill px-4">Request a Quote</a>
                     </div>
                 </div>
@@ -69,8 +82,15 @@ include __DIR__ . '/../includes/nav.php';
                                 Travel from your pickup address to the airport with a pre-booked private hire journey.
                                 Ideal for holidays, business trips, family travel and early morning departures.
                             </p>
-                            <button type="button" class="btn btn-brand btn-lg rounded-pill px-4" data-bs-toggle="modal" data-bs-target="#airportBookingModal">
-                                Book Airport Transfer
+                            <button
+                                type="button"
+                                class="btn btn-link text-link p-0 airport-booking-trigger"
+                                data-bs-toggle="modal"
+                                data-bs-target="#airportBookingModal"
+                                data-journey-type="dropoff"
+                            >
+                                Book Airport Drop-off
+                                <i class="fa-solid fa-arrow-right"></i>
                             </button>
                         </div>
                     </div>
@@ -85,7 +105,16 @@ include __DIR__ . '/../includes/nav.php';
                                 Arrange a pickup from the airport after your flight arrives. Please provide your
                                 flight number so arrival times can be checked where possible.
                             </p>
-                            <a href="/airport-booking.php?type=pickup" class="text-link">Book airport pickup <i class="fa-solid fa-arrow-right"></i></a>
+                            <button
+                                type="button"
+                                class="btn btn-link text-link p-0 airport-booking-trigger"
+                                data-bs-toggle="modal"
+                                data-bs-target="#airportBookingModal"
+                                data-journey-type="pickup"
+                            >
+                                Book airport pickup
+                                <i class="fa-solid fa-arrow-right"></i>
+                            </button>
                         </div>
                     </div>
                 </div>
@@ -198,5 +227,18 @@ include __DIR__ . '/../includes/nav.php';
 </main>
 
 <?php include __DIR__ . '/../includes/airport-booking-modal.php'; ?>
+
+<script>
+window.ediventuresAirportBooking = {
+    draft: <?= json_encode(
+        $bookingDraft,
+        JSON_HEX_TAG |
+        JSON_HEX_AMP |
+        JSON_HEX_APOS |
+        JSON_HEX_QUOT
+    ) ?>,
+    editMode: <?= isset($_GET['edit']) && $_GET['edit'] === '1' ? 'true' : 'false' ?>
+};
+</script>
 
 <?php include __DIR__ . '/../includes/footer.php'; ?>

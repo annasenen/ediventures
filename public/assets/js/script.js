@@ -23,6 +23,8 @@ document.addEventListener('DOMContentLoaded', function () {
     const oversizedLuggage = document.getElementById('oversizedLuggage');
     const extraStopSelect = document.getElementById('extraStopSelect');
     const manualLuggageMessage = document.getElementById('manualLuggageMessage');
+    const modalElement = document.getElementById('airportBookingModal');
+    const bookingTriggers = document.querySelectorAll('.airport-booking-trigger');
 
     function getMinimumNoticeMinutes() {
         if (!journeyType || !airportSelect) return 60;
@@ -204,6 +206,67 @@ document.addEventListener('DOMContentLoaded', function () {
     if (smallBagsSelect) smallBagsSelect.addEventListener('change', updateLuggageRules);
     if (oversizedLuggage) oversizedLuggage.addEventListener('change', updateLuggageRules);
     if (extraStopSelect) extraStopSelect.addEventListener('change', updateLuggageRules);
+
+    /*
+    * Preselect pickup/drop-off from booking buttons.
+    */
+    bookingTriggers.forEach(function (trigger) {
+        trigger.addEventListener('click', function () {
+            const selectedJourneyType = trigger.dataset.journeyType ?? '';
+
+            if (!journeyType) {
+                return;
+            }
+
+            journeyType.value = selectedJourneyType;
+
+            journeyType.dispatchEvent(
+                new Event('change', { bubbles: true })
+            );
+        });
+    });
+
+
+    /*
+    * Restore a previously entered airport booking draft.
+    */
+    const bookingData = window.ediventuresAirportBooking || {};
+    const draft = bookingData.draft || {};
+
+    if (modalElement) {
+        Object.entries(draft).forEach(function ([name, value]) {
+            const field = modalElement.querySelector(
+                '[name="' + CSS.escape(name) + '"]'
+            );
+
+            if (!field) {
+                return;
+            }
+
+            if (field.type === 'checkbox') {
+                field.checked = value === 'yes';
+            } else {
+                field.value = value ?? '';
+            }
+
+            field.dispatchEvent(
+                new Event('change', { bubbles: true })
+            );
+        });
+    }
+
+
+    /*
+    * Reopen the booking form automatically when the customer
+    * chooses to change an existing journey.
+    */
+    if (
+        modalElement &&
+        bookingData.editMode === true
+    ) {
+        const bookingModal = new bootstrap.Modal(modalElement);
+        bookingModal.show();
+    }
 
     updateTimeOptions();
     updateJourneyFields();

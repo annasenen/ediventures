@@ -147,6 +147,7 @@ CREATE TABLE bookings (
     depositAmount DECIMAL(10,2) DEFAULT 0.00,
 
     status VARCHAR(30) DEFAULT 'pending',
+    holdExpiresAt DATETIME NULL,
     createdAt DATETIME DEFAULT CURRENT_TIMESTAMP,
 
     FOREIGN KEY (customerID) REFERENCES customers(customerID)

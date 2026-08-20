@@ -28,6 +28,9 @@ try {
     );
 
     $pdo->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
+    date_default_timezone_set('UTC');
+
+    $pdo->exec("SET time_zone = '+00:00'");
 
 } catch (PDOException $e) {
     die("Database connection failed.");

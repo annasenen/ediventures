@@ -42,8 +42,16 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
             $_SESSION["customerName"] = $customer["fullName"];
             $_SESSION["customerEmail"] = $customer["email"];
 
-            if (isset($_GET["redirect"]) && $_GET["redirect"] === "airport-booking-confirm") {
-                header("Location: /airport-booking-confirm.php");
+            if (
+                isset($_SESSION["after_login_redirect"]) &&
+                $_SESSION["after_login_redirect"] === "/airport-booking-check.php?resume=1" &&
+                isset($_SESSION["pending_airport_booking"])
+            ) {
+                $redirect = $_SESSION["after_login_redirect"];
+
+                unset($_SESSION["after_login_redirect"]);
+
+                header("Location: " . $redirect);
                 exit;
             }
 
@@ -105,7 +113,7 @@ include __DIR__ . '/../includes/nav.php';
                 </div>
             <?php endif; ?>
 
-            <form action="<?= htmlspecialchars($_SERVER['REQUEST_URI']) ?>" method="post">
+            <form action="/login.php" method="post">
 
                 <div class="row g-3">
 
