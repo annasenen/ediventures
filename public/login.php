@@ -135,10 +135,16 @@ include __DIR__ . '/../includes/nav.php';
                     </div>
 
                     <div class="col-12">
-                        <p class="mb-0">
-                            Do not have an account yet?
-                            <a href="/register.php" class="text-link">Create one here</a>
-                        </p>
+                        <div class="custom-tour-box mt-4">
+                            <h3 class="h5 mb-2">New to EdiVentures?</h3>
+                            <p class="mb-3">
+                                Create an account to manage your bookings, quotes and payments.
+                            </p>
+
+                            <a href="/register.php" class="btn btn-outline-dark rounded-pill px-4">
+                                Create Account
+                            </a>
+                        </div>
                     </div>
 
                 </div>

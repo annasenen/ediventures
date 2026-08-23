@@ -9,6 +9,7 @@ $canonicalUrl = "https://www.ediventures.co.uk/airport-booking-check.php";
 require_once __DIR__ . '/../config/database.php';
 require_once __DIR__ . '/../app/Services/VehicleAvailabilityService.php';
 require_once __DIR__ . '/../app/Services/AirportPricingService.php';
+require_once __DIR__ . '/../app/Services/AirportJourneyRuleService.php';
 
 $errors = [];
 
@@ -123,7 +124,7 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
 
 } else {
 
-    header("Location: //airport-transfers.php");
+    header("Location: /airport-transfers.php");
     exit;
 }
 
@@ -227,19 +228,25 @@ if (empty($errors)) {
 
 if (empty($errors)) {
 
-    /*
-     * Temporary blocking rule:
-     * Edinburgh = 2 hours
-     * Other airports = 3 hours
-     */
-    $blockHours = 2;
+    try {
+        $journeyRuleService =
+            new AirportJourneyRuleService($pdo);
 
-    if ($airportCode !== "edinburgh") {
-        $blockHours = 3;
+        $journeyEnd =
+            $journeyRuleService->calculateJourneyEnd(
+                $journeyStart,
+                $airportName,
+                $journeyType
+            );
+
+        if (!$journeyEnd) {
+            $errors[] =
+                "Online booking timing is not configured for this airport and journey type yet.";
+        }
+
+    } catch (InvalidArgumentException $e) {
+        $errors[] = $e->getMessage();
     }
-
-    $journeyEnd = clone $journeyStart;
-    $journeyEnd->modify("+{$blockHours} hours");
 
     /*
      * Temporary postcode-zone logic.
@@ -508,6 +515,19 @@ include __DIR__ . '/../includes/nav.php';
 
 
             <div class="booking-form-card mx-auto">
+
+            <?php if (
+                isset($_GET["price_changed"]) &&
+                $_GET["price_changed"] === "1"
+            ): ?>
+
+                <div class="alert alert-warning">
+                    <strong>Availability changed while you were booking.</strong>
+                    We found another suitable vehicle and recalculated the price.
+                    Please review the updated amount before continuing.
+                </div>
+
+            <?php endif; ?>
 
                 <div class="alert alert-success">
 

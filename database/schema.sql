@@ -8,11 +8,13 @@ DROP TABLE IF EXISTS bookings;
 DROP TABLE IF EXISTS vehicle_blocks;
 DROP TABLE IF EXISTS airport_charges;
 DROP TABLE IF EXISTS airport_pricing;
+DROP TABLE IF EXISTS airport_journey_rules;
 DROP TABLE IF EXISTS vehicles;
 DROP TABLE IF EXISTS custom_tour_requests;
 DROP TABLE IF EXISTS customer_roles;
 DROP TABLE IF EXISTS roles;
 DROP TABLE IF EXISTS customers;
+
 
 CREATE TABLE customers (
     customerID INT AUTO_INCREMENT PRIMARY KEY,
@@ -155,4 +157,16 @@ CREATE TABLE bookings (
 
     FOREIGN KEY (vehicleID) REFERENCES vehicles(vehicleID)
         ON DELETE SET NULL
+);
+
+CREATE TABLE airport_journey_rules (
+    airportRuleID INT AUTO_INCREMENT PRIMARY KEY,
+    airportName VARCHAR(100) NOT NULL,
+    journeyType VARCHAR(30) NOT NULL,
+    blockMinutes INT NOT NULL,
+    isActive TINYINT(1) DEFAULT 1,
+    updatedAt DATETIME DEFAULT CURRENT_TIMESTAMP
+        ON UPDATE CURRENT_TIMESTAMP,
+
+    UNIQUE (airportName, journeyType)
 );

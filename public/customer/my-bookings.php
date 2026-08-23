@@ -23,6 +23,18 @@ $stmt = $pdo->prepare($sql);
 $stmt->execute([$customerID]);
 $bookings = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
+function formatUkDateTime(string $utcDateTime): string
+{
+    $dateTime = new DateTimeImmutable(
+        $utcDateTime,
+        new DateTimeZone('UTC')
+    );
+
+    return $dateTime
+        ->setTimezone(new DateTimeZone('Europe/London'))
+        ->format('d/m/Y H:i');
+}
+
 include __DIR__ . '/../../includes/header.php';
 include __DIR__ . '/../../includes/nav.php';
 ?>
@@ -92,7 +104,7 @@ include __DIR__ . '/../../includes/nav.php';
 
                             <p>
                                 <strong>Date and time:</strong>
-                                <?= htmlspecialchars(date("d/m/Y H:i", strtotime($booking["journeyStart"]))) ?>
+                                <?= htmlspecialchars(formatUkDateTime($booking["journeyStart"])) ?>
                             </p>
 
                             <p>
