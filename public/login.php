@@ -64,6 +64,7 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
             $roleStmt->execute([$customer["customerID"]]);
 
             $userRoles = $roleStmt->fetchAll(PDO::FETCH_COLUMN);
+            $_SESSION["userRoles"] = $userRoles;
 
             if (in_array("admin", $userRoles, true)) {
                 header("Location: /admin/dashboard.php");

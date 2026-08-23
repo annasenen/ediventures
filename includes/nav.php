@@ -1,7 +1,17 @@
 <?php
+
 if (session_status() === PHP_SESSION_NONE) {
     session_start();
 }
+
+$isAdmin =
+    isset($_SESSION["userRoles"]) &&
+    in_array(
+        "admin",
+        $_SESSION["userRoles"],
+        true
+    );
+
 ?>
 
 <nav class="navbar navbar-expand-lg navbar-light bg-white shadow-sm sticky-top">
@@ -23,14 +33,35 @@ if (session_status() === PHP_SESSION_NONE) {
                 <li class="nav-item"><a class="nav-link" href="/build-your-tour.php">Build Your Tour</a></li>
                 <?php if (isset($_SESSION["customerID"])): ?>
 
-                    <li class="nav-item ms-lg-2">
-                        <a class="btn btn-brand rounded-pill px-4" href="/customer/dashboard.php">
-                            My Account
-                        </a>
-                    </li>
+                    <?php if ($isAdmin): ?>
+
+                        <li class="nav-item ms-lg-2">
+                            <a
+                                class="btn btn-brand rounded-pill px-4"
+                                href="/admin/dashboard.php"
+                            >
+                                Admin Dashboard
+                            </a>
+                        </li>
+
+                    <?php else: ?>
+
+                        <li class="nav-item ms-lg-2">
+                            <a
+                                class="btn btn-brand rounded-pill px-4"
+                                href="/customer/dashboard.php"
+                            >
+                                My Account
+                            </a>
+                        </li>
+
+                    <?php endif; ?>
 
                     <li class="nav-item">
-                        <a class="btn btn-outline-dark rounded-pill px-4" href="/logout.php">
+                        <a
+                            class="btn btn-outline-dark rounded-pill px-4"
+                            href="/logout.php"
+                        >
                             Logout
                         </a>
                     </li>

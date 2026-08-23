@@ -97,7 +97,9 @@ CREATE TABLE airport_pricing (
     isActive TINYINT(1) DEFAULT 1,
 
     FOREIGN KEY (vehicleID) REFERENCES vehicles(vehicleID)
-        ON DELETE CASCADE
+        ON DELETE CASCADE,
+
+    UNIQUE (vehicleID, airportName, zoneName, journeyType)
 );
 
 CREATE TABLE airport_charges (
@@ -107,6 +109,9 @@ CREATE TABLE airport_charges (
     dropoffCharge DECIMAL(10,2) DEFAULT 0.00,
     isActive TINYINT(1) DEFAULT 1,
     updatedAt DATETIME DEFAULT CURRENT_TIMESTAMP
+        ON UPDATE CURRENT_TIMESTAMP,
+
+    UNIQUE (airportName)
 );
 
 CREATE TABLE vehicle_blocks (

@@ -123,9 +123,16 @@ include __DIR__ . '/../../includes/nav.php';
                 <div class="col-md-6 col-lg-4">
                     <div class="feature-box">
                         <i class="fa-solid fa-plane"></i>
-                        <h3>Airport Prices</h3>
-                        <p>Control airport route prices, zones and airport charges.</p>
-                        <a href="#" class="text-link">Coming soon</a>
+                        <h3>Airport Settings</h3>
+                        <p>
+                            Control journey rules, vehicle prices and airport charges.
+                        </p>
+                        <a
+                            href="/admin/airport-settings.php"
+                            class="text-link"
+                        >
+                            Manage airport settings
+                        </a>
                     </div>
                 </div>
 

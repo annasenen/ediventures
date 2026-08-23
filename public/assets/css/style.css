@@ -1,90 +1,418 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Manrope:wght@600;700;800&display=swap');
+
+/* =========================================================
+   EDIVENTURES — MODERN DESIGN SYSTEM
+   Keeps the existing brand green and existing HTML class names,
+   while modernising typography, spacing, navigation, forms,
+   cards, tables and responsive behaviour.
+========================================================= */
+
 :root {
     --brand-green: #61792d;
-    --brand-dark: #111111;
-    --brand-light: #f7f8f3;
+    --brand-green-dark: #4f6425;
+    --brand-green-soft: #f2f5eb;
+    --brand-dark: #151814;
+    --brand-text: #252925;
+    --brand-muted: #6f756f;
+    --brand-light: #f7f8f5;
+    --brand-border: #e3e7df;
+    --brand-white: #ffffff;
+
+    --font-body: 'Inter', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+    --font-heading: 'Manrope', 'Inter', system-ui, sans-serif;
+
+    --radius-sm: 10px;
+    --radius-md: 14px;
+    --radius-lg: 18px;
+    --radius-xl: 24px;
+
+    --shadow-sm: 0 4px 16px rgba(17, 24, 17, 0.06);
+    --shadow-md: 0 10px 28px rgba(17, 24, 17, 0.08);
+    --shadow-lg: 0 18px 48px rgba(17, 24, 17, 0.12);
+
+    --transition-fast: 180ms ease;
+}
+
+/* =========================================================
+   BASE
+========================================================= */
+
+html {
+    scroll-behavior: smooth;
 }
 
 body {
-    font-family: 'Montserrat', sans-serif;
-    color: #222;
+    margin: 0;
+    font-family: var(--font-body);
+    font-size: 1rem;
+    line-height: 1.65;
+    color: var(--brand-text);
+    background: var(--brand-white);
     overflow-x: hidden;
+    -webkit-font-smoothing: antialiased;
+    text-rendering: optimizeLegibility;
 }
 
-.site-logo {
-    height: 70px;
+h1,
+h2,
+h3,
+h4,
+h5,
+h6 {
+    font-family: var(--font-heading);
+    color: var(--brand-dark);
+    letter-spacing: -0.025em;
+}
+
+/* Headings inside dark sections */
+.text-white h1,
+.text-white h2,
+.text-white h3,
+.text-white h4,
+.text-white h5,
+.text-white h6,
+.bg-dark h1,
+.bg-dark h2,
+.bg-dark h3,
+.bg-dark h4,
+.bg-dark h5,
+.bg-dark h6,
+.hero-section h1,
+.hero-section h2,
+.hero-section h3,
+.page-hero h1,
+.page-hero h2,
+.page-hero h3,
+.account-header h1,
+.account-header h2,
+.account-header h3,
+.final-cta h1,
+.final-cta h2,
+.final-cta h3 {
+    color: #fff;
+}
+
+/* Light content boxes inside dark sections must use dark text */
+.details-box,
+.custom-tour-box,
+.booking-form-card,
+.feature-box,
+.step-box,
+.service-card {
+    color: var(--brand-dark);
+}
+
+.details-box h1,
+.details-box h2,
+.details-box h3,
+.details-box h4,
+.details-box h5,
+.details-box h6,
+.custom-tour-box h1,
+.custom-tour-box h2,
+.custom-tour-box h3,
+.booking-form-card h1,
+.booking-form-card h2,
+.booking-form-card h3 {
+    color: var(--brand-dark);
+}
+
+.details-box p,
+.details-box li,
+.details-box ul {
+    color: var(--text-body);
+}
+
+p {
+    margin-bottom: 1rem;
+}
+
+a {
+    transition: color var(--transition-fast), background-color var(--transition-fast), border-color var(--transition-fast);
+}
+
+img {
+    max-width: 100%;
+}
+
+section {
+    padding-top: 4.25rem;
+    padding-bottom: 4.25rem;
+}
+
+.bg-light {
+    background-color: var(--brand-light) !important;
+}
+
+.bg-brand-soft {
+    background: var(--brand-green-soft);
+}
+
+.text-brand {
+    color: var(--brand-green) !important;
+}
+
+/* =========================================================
+   NAVBAR
+========================================================= */
+
+.navbar {
+    min-height: 78px;
+    padding: 0.55rem 0;
+    background: rgba(255, 255, 255, 0.96) !important;
+    border-bottom: 1px solid rgba(21, 24, 20, 0.06);
+    box-shadow: 0 4px 18px rgba(17, 24, 17, 0.05) !important;
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+}
+
+.navbar .container {
+    gap: 1rem;
+}
+
+.navbar-brand {
+    display: inline-flex;
+    align-items: center;
+    padding: 0;
+    margin-right: 1.5rem;
+}
+
+.site-logo,
+.navbar-brand img {
+    height: 54px;
     width: auto;
+    max-height: 54px;
 }
 
+.navbar-nav {
+    gap: 0.2rem;
+}
+
+.navbar-nav .nav-link,
 .nav-link {
+    position: relative;
+    padding: 0.7rem 0.7rem !important;
+    color: #2a2e29;
+    font-size: 0.92rem;
     font-weight: 600;
-    color: #111;
+    border-radius: 9px;
 }
 
+.navbar-nav .nav-link:hover,
+.navbar-nav .nav-link:focus,
 .nav-link:hover {
     color: var(--brand-green);
+    background: var(--brand-green-soft);
+}
+
+.navbar-toggler {
+    border: 1px solid var(--brand-border);
+    border-radius: var(--radius-sm);
+    padding: 0.5rem 0.65rem;
+}
+
+.navbar-toggler:focus {
+    box-shadow: 0 0 0 0.2rem rgba(97, 121, 45, 0.13);
+}
+
+/* =========================================================
+   BUTTONS
+========================================================= */
+
+.btn {
+    min-height: 44px;
+    border-radius: 12px;
+    padding: 0.65rem 1.1rem;
+    font-family: var(--font-body);
+    font-size: 0.95rem;
+    font-weight: 700;
+    letter-spacing: -0.01em;
+    transition:
+        transform var(--transition-fast),
+        box-shadow var(--transition-fast),
+        background-color var(--transition-fast),
+        border-color var(--transition-fast),
+        color var(--transition-fast);
+}
+
+.btn:hover {
+    transform: translateY(-1px);
+}
+
+.btn:active {
+    transform: translateY(0);
+}
+
+/* Existing HTML uses rounded-pill extensively.
+   Keep the class working but make buttons feel more modern. */
+.btn.rounded-pill {
+    border-radius: 12px !important;
 }
 
 .btn-brand {
-    background-color: var(--brand-green);
-    border: 2px solid var(--brand-green);
+    background: var(--brand-green);
+    border: 1px solid var(--brand-green);
     color: #fff;
-    font-weight: 600;
+    box-shadow: 0 5px 14px rgba(97, 121, 45, 0.18);
 }
 
-.btn-brand:hover {
-    background-color: #fff;
-    color: var(--brand-green);
-    border-color: var(--brand-green);
-}
-
-.hero-section {
-    background:
-        linear-gradient(rgba(0, 0, 0, 0.76), rgba(0, 0, 0, 0.76)),
-        url('/assets/img/background-image.jpg') center/cover no-repeat;
+.btn-brand:hover,
+.btn-brand:focus {
+    background: var(--brand-green-dark);
+    border-color: var(--brand-green-dark);
     color: #fff;
-    padding-top: 4rem;
-    padding-bottom: 4rem;
+    box-shadow: 0 8px 20px rgba(97, 121, 45, 0.22);
 }
 
-.min-vh-75 {
-    min-height: 75vh;
+.btn-outline-dark {
+    border-color: #cfd4cc;
+    color: #222721;
+    background: #fff;
 }
+
+.btn-outline-dark:hover,
+.btn-outline-dark:focus {
+    background: #202420;
+    border-color: #202420;
+    color: #fff;
+}
+
+.btn-outline-light {
+    border-color: rgba(255, 255, 255, 0.65);
+}
+
+.btn-lg {
+    min-height: 48px;
+    padding: 0.75rem 1.35rem;
+    font-size: 1rem;
+}
+
+/* =========================================================
+   LABELS / HEADINGS / LINKS
+========================================================= */
 
 .eyebrow,
 .section-label {
+    margin-bottom: 0.75rem;
     color: var(--brand-green);
-    font-weight: 800;
+    font-family: var(--font-body);
+    font-size: 0.78rem;
+    font-weight: 700;
+    letter-spacing: 0.12em;
     text-transform: uppercase;
-    letter-spacing: 0.08em;
-    font-size: 0.9rem;
 }
 
 .hero-title {
-    font-size: clamp(2.2rem, 5vw, 4.3rem);
+    max-width: 850px;
+    font-size: clamp(2.25rem, 5vw, 4.2rem);
     font-weight: 800;
-    line-height: 1.05;
+    line-height: 1.03;
+}
+
+.page-title {
+    max-width: 900px;
+    font-size: clamp(2rem, 4vw, 3.35rem);
+    font-weight: 800;
+    line-height: 1.08;
+}
+
+.section-title {
+    font-size: clamp(1.7rem, 3vw, 2.3rem);
+    font-weight: 800;
+    line-height: 1.16;
+}
+
+.hero-text,
+.page-hero-text {
+    max-width: 760px;
+    font-size: 1.05rem;
+    line-height: 1.7;
+    color: rgba(255, 255, 255, 0.88);
 }
 
 .hero-text {
-    font-size: 1.15rem;
     max-width: 650px;
-    color: #eeeeee;
+}
+
+.lead {
+    font-size: 1.06rem;
+    line-height: 1.75;
+}
+
+.section-intro {
+    max-width: 850px;
+    color: #d8ddd5;
+}
+
+.text-link {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.35rem;
+    color: var(--brand-green);
+    font-weight: 700;
+    text-decoration: none;
+}
+
+.text-link:hover {
+    color: var(--brand-green-dark);
+}
+
+/* =========================================================
+   HERO AREAS
+========================================================= */
+
+.hero-section {
+    background:
+        linear-gradient(rgba(10, 13, 10, 0.72), rgba(10, 13, 10, 0.72)),
+        url('/assets/img/background-image.jpg') center/cover no-repeat;
+    color: #fff;
+    padding: 5rem 0;
+}
+
+.page-hero {
+    position: relative;
+    min-height: 420px;
+    display: flex;
+    align-items: center;
+    background:
+        linear-gradient(rgba(10, 13, 10, 0.68), rgba(10, 13, 10, 0.68)),
+        url('/assets/img/view-loch-lomond-one-day-tour.jpg') center/cover no-repeat;
+    padding: 4rem 0;
+}
+
+.airport-hero {
+    background:
+        linear-gradient(rgba(10, 13, 10, 0.66), rgba(10, 13, 10, 0.66)),
+        url('/assets/img/passenger-plane-airport-transfer.jpg') center/cover no-repeat;
+}
+
+.min-vh-75 {
+    min-height: 72vh;
+}
+
+.min-vh-50 {
+    min-height: 0;
 }
 
 .hero-image-card {
-    border: 8px solid rgba(255, 255, 255, 0.12);
-    border-radius: 1.5rem;
-    box-shadow: 0 1rem 3rem rgba(0, 0, 0, 0.35);
+    border: 1px solid rgba(255, 255, 255, 0.14);
+    border-radius: var(--radius-xl);
+    box-shadow: var(--shadow-lg);
+    overflow: hidden;
 }
 
+/* =========================================================
+   TRUST BAR
+========================================================= */
+
 .trust-bar {
-    background-color: var(--brand-green);
+    background: var(--brand-green);
     color: #fff;
 }
 
 .trust-bar i {
-    font-size: 1.8rem;
-    margin-bottom: 0.5rem;
+    font-size: 1.55rem;
+    margin-bottom: 0.55rem;
 }
 
 .trust-bar p {
@@ -92,218 +420,58 @@ body {
     font-weight: 700;
 }
 
-.section-title {
-    font-weight: 800;
-    line-height: 1.15;
-}
+/* =========================================================
+   CARDS / BOXES
+========================================================= */
 
-.section-intro {
-    max-width: 850px;
-    color: #ddd;
-}
-
-.text-brand {
-    color: var(--brand-green);
+.service-card,
+.tour-card,
+.feature-box,
+.step-box,
+.booking-form-card,
+.custom-tour-box,
+.details-box,
+.tour-long-description,
+.tour-booking-summary {
+    background: #fff;
+    border: 1px solid var(--brand-border);
+    border-radius: var(--radius-lg);
+    box-shadow: var(--shadow-sm);
 }
 
 .service-card,
-.booking-card,
-.feature-box,
-.step-box {
-    border-radius: 1.25rem;
-}
-
-.service-card {
-    background-color: #fff;
+.tour-card {
+    height: 100%;
     overflow: hidden;
-    box-shadow: 0 0.5rem 1.5rem rgba(0, 0, 0, 0.08);
-    transition: transform 0.2s ease, box-shadow 0.2s ease;
+    transition: transform var(--transition-fast), box-shadow var(--transition-fast);
 }
 
-.service-card:hover {
-    transform: translateY(-5px);
-    box-shadow: 0 1rem 2rem rgba(0, 0, 0, 0.14);
+.service-card:hover,
+.tour-card:hover {
+    transform: translateY(-4px);
+    box-shadow: var(--shadow-md);
 }
 
-.service-card img {
+.service-card img,
+.tour-card-img {
     width: 100%;
-    height: 240px;
+    height: 230px;
     object-fit: cover;
 }
 
 .service-card h3,
 .booking-card h3,
 .feature-box h3,
-.step-box h3 {
-    font-size: 1.25rem;
-    font-weight: 800;
-}
-
-.text-link {
-    color: var(--brand-green);
-    font-weight: 700;
-    text-decoration: none;
-}
-
-.text-link:hover {
-    color: #000;
-}
-
-.booking-card {
-    background-color: #fff;
-    color: #111;
-    height: 100%;
-    padding: 2rem;
-    text-align: center;
-}
-
-.booking-card i {
-    color: var(--brand-green);
-    font-size: 2.2rem;
-    margin-bottom: 1rem;
-}
-
-.feature-box {
-    background-color: var(--brand-light);
-    padding: 1.5rem;
-    height: 100%;
-}
-
-.feature-box i {
-    color: var(--brand-green);
-    font-size: 2rem;
-    margin-bottom: 1rem;
-}
-
-.step-box {
-    background-color: #fff;
-    padding: 1.5rem;
-    height: 100%;
-    box-shadow: 0 0.5rem 1.5rem rgba(0, 0, 0, 0.06);
-}
-
-.step-box span {
-    display: inline-flex;
-    width: 45px;
-    height: 45px;
-    border-radius: 50%;
-    align-items: center;
-    justify-content: center;
-    background-color: var(--brand-green);
-    color: #fff;
-    font-weight: 800;
-    margin-bottom: 1rem;
-}
-
-.final-cta {
-    background:
-        linear-gradient(rgba(97, 121, 45, 0.9), rgba(97, 121, 45, 0.9)),
-        url('/assets/img/background-image.jpg') center/cover no-repeat;
-    padding: 5rem 0;
-}
-
-.footer-logo {
-    height: 70px;
-    background-color: #fff;
-    border-radius: 0.5rem;
-    padding: 0.25rem;
-}
-
-.footer-text {
-    color: #ccc;
-}
-
-.footer-heading {
-    font-size: 1rem;
-    font-weight: 800;
-    margin-bottom: 1rem;
-}
-
-.footer-list {
-    list-style: none;
-    padding-left: 0;
-}
-
-.footer-list li {
-    margin-bottom: 0.5rem;
-}
-
-.footer a {
-    color: #ddd;
-    text-decoration: none;
-}
-
-.footer a:hover {
-    color: var(--brand-green);
-}
-
-.social-links a {
-    display: inline-flex;
-    width: 38px;
-    height: 38px;
-    border-radius: 50%;
-    align-items: center;
-    justify-content: center;
-    background-color: var(--brand-green);
-    color: #fff;
-    margin-right: 0.5rem;
-}
-
-.social-links a:hover {
-    background-color: #fff;
-    color: var(--brand-green);
-}
-
-.footer-bottom-link {
-    color: #ccc;
-}
-
-.page-hero {
-    background:
-        linear-gradient(rgba(0, 0, 0, 0.72), rgba(0, 0, 0, 0.72)),
-        url('/assets/img/view-loch-lomond-one-day-tour.jpg') center/cover no-repeat;
-    padding: 5rem 0;
-}
-
-.min-vh-50 {
-    min-height: 50vh;
-}
-
-.page-title {
-    font-size: clamp(2.2rem, 5vw, 4rem);
-    font-weight: 800;
-    line-height: 1.08;
-}
-
-.page-hero-text {
+.step-box h3,
+.tour-card-body h3 {
     font-size: 1.15rem;
-    max-width: 850px;
-    color: #eee;
-}
-
-.tour-intro {
-    max-width: 900px;
+    font-weight: 800;
+    line-height: 1.3;
 }
 
 .tour-card {
     display: flex;
     flex-direction: column;
-    background-color: #fff;
-    border-radius: 1.25rem;
-    overflow: hidden;
-    box-shadow: 0 0.5rem 1.5rem rgba(0, 0, 0, 0.08);
-    transition: transform 0.2s ease, box-shadow 0.2s ease;
-}
-
-.tour-card:hover {
-    transform: translateY(-5px);
-    box-shadow: 0 1rem 2rem rgba(0, 0, 0, 0.14);
-}
-
-.tour-card-img {
-    width: 100%;
-    height: 240px;
-    object-fit: cover;
 }
 
 .tour-card-body {
@@ -313,278 +481,266 @@ body {
     padding: 1.5rem;
 }
 
-.tour-card-body h3 {
-    font-size: 1.25rem;
-    font-weight: 800;
-}
-
 .tour-meta {
     display: flex;
     flex-direction: column;
     gap: 0.35rem;
-    color: var(--brand-green);
-    font-weight: 700;
     margin: 0.75rem 0;
+    color: var(--brand-green);
+    font-size: 0.93rem;
+    font-weight: 700;
 }
 
-.custom-tour-box {
-    background-color: #fff;
-    border-radius: 1.25rem;
-    padding: 2rem;
-    box-shadow: 0 0.5rem 1.5rem rgba(0, 0, 0, 0.08);
-}
-
-.custom-tour-box h3 {
-    font-weight: 800;
-}
-
-.airport-hero {
-    background:
-        linear-gradient(rgba(0, 0, 0, 0.72), rgba(0, 0, 0, 0.72)),
-        url('/assets/img/passenger-plane-airport-transfer.jpg') center/cover no-repeat;
-}
-
-.details-box {
-    background-color: #fff;
+.booking-card {
+    height: 100%;
+    padding: 1.5rem;
+    text-align: center;
     color: #111;
-    border-radius: 1.25rem;
-    padding: 2rem;
-    box-shadow: 0 0.5rem 1.5rem rgba(0, 0, 0, 0.08);
 }
 
-.details-box h3 {
-    font-weight: 800;
-    margin-bottom: 1rem;
+.booking-card i {
+    color: var(--brand-green);
+    font-size: 1.7rem;
+    margin-bottom: 0.85rem;
 }
 
-.details-box ul {
-    margin-bottom: 0;
-    padding-left: 1.2rem;
+.feature-box {
+    height: 100%;
+    padding: 1.35rem;
+    background: #fff;
+    transition: transform var(--transition-fast), box-shadow var(--transition-fast);
 }
 
-.details-box li {
+.feature-box:hover {
+    transform: translateY(-3px);
+    box-shadow: var(--shadow-md);
+}
+
+.feature-box i {
+    color: var(--brand-green);
+    font-size: 1.45rem;
     margin-bottom: 0.75rem;
 }
 
+.step-box {
+    height: 100%;
+    padding: 1.5rem;
+}
+
+.step-box span {
+    display: inline-flex;
+    width: 42px;
+    height: 42px;
+    align-items: center;
+    justify-content: center;
+    margin-bottom: 1rem;
+    border-radius: 12px;
+    background: var(--brand-green-soft);
+    color: var(--brand-green-dark);
+    font-weight: 800;
+}
+
+.custom-tour-box,
+.details-box,
+.tour-long-description {
+    padding: 1.75rem;
+}
+
+.custom-tour-box h3,
+.details-box h3 {
+    font-weight: 800;
+}
+
+.details-box h3 {
+    margin-bottom: 1rem;
+}
+
+.details-box ul,
+.custom-tour-box ul {
+    padding-left: 1.2rem;
+}
+
+.details-box li,
+.custom-tour-box li {
+    margin-bottom: 0.65rem;
+}
+
+.quick-contact-box {
+    padding: 1.4rem;
+    background: var(--brand-green-soft);
+    border: 1px solid #dde5d2;
+    border-left: 4px solid var(--brand-green);
+    border-radius: var(--radius-md);
+}
+
+/* =========================================================
+   FORMS
+========================================================= */
+
 .booking-form-card {
     max-width: 900px;
-    background-color: #fff;
-    border-radius: 1.25rem;
-    padding: 2rem;
-    box-shadow: 0 0.75rem 2rem rgba(0, 0, 0, 0.08);
+    padding: 1.75rem;
 }
 
-.booking-form-card .form-control,
-.booking-form-card .form-select {
-    padding: 0.8rem;
-    border-radius: 0.75rem;
+.form-label {
+    margin-bottom: 0.45rem;
+    color: #2d322c;
+    font-size: 0.92rem;
+    font-weight: 700;
 }
 
-.booking-form-card .form-control:focus,
-.booking-form-card .form-select:focus {
-    border-color: var(--brand-green);
-    box-shadow: 0 0 0 0.2rem rgba(97, 121, 45, 0.15);
-}
-
-.booking-modal {
-    border-radius: 1.25rem;
-    overflow: hidden;
-}
-
-.booking-modal .modal-header {
-    background-color: #f7f8f3;
-    border-bottom: 1px solid #e5e5e5;
-}
-
-.booking-modal .form-control,
-.booking-modal .form-select {
-    padding: 0.8rem;
-    border-radius: 0.75rem;
-}
-
-.booking-modal .form-control:focus,
-.booking-modal .form-select:focus {
-    border-color: var(--brand-green);
-    box-shadow: 0 0 0 0.2rem rgba(97, 121, 45, 0.15);
-}
-
-/* Darker dropdown selected text */
+.form-control,
 .form-select {
-    color: #1f1f1f;
+    min-height: 46px;
+    padding: 0.7rem 0.85rem;
+    border: 1px solid #d8ddd5;
+    border-radius: 11px;
+    color: #222721;
+    background-color: #fff;
+    font-size: 0.97rem;
     font-weight: 500;
 }
 
-/* Better dropdown option readability */
+.form-control::placeholder {
+    color: #9da39c;
+}
+
+.form-control:focus,
+.form-select:focus,
+.booking-form-card .form-control:focus,
+.booking-form-card .form-select:focus,
+.booking-modal .form-control:focus,
+.booking-modal .form-select:focus {
+    border-color: var(--brand-green);
+    box-shadow: 0 0 0 0.2rem rgba(97, 121, 45, 0.12);
+}
+
 .form-select option {
     color: #1f1f1f;
     font-weight: 500;
 }
 
-/* Disabled dropdown options */
 .form-select option:disabled {
     color: #9a9a9a;
     font-weight: 400;
 }
 
-.quick-contact-box {
-    background-color: var(--brand-light);
-    border-radius: 1rem;
+.form-check-input:checked {
+    background-color: var(--brand-green);
+    border-color: var(--brand-green);
+}
+
+.form-text,
+.text-muted {
+    color: var(--brand-muted) !important;
+}
+
+/* =========================================================
+   MODALS
+========================================================= */
+
+.booking-modal {
+    border: 0;
+    border-radius: var(--radius-xl);
+    box-shadow: var(--shadow-lg);
+    overflow: hidden;
+}
+
+.booking-modal .modal-header {
+    padding: 1.25rem 1.5rem;
+    background: var(--brand-light);
+    border-bottom: 1px solid var(--brand-border);
+}
+
+.booking-modal .modal-body {
     padding: 1.5rem;
-    border-left: 5px solid var(--brand-green);
 }
 
-/* Typography refinement */
-body {
-    font-size: 1rem;
-    line-height: 1.6;
+.booking-modal .form-control,
+.booking-modal .form-select {
+    min-height: 46px;
 }
 
-.hero-title {
-    font-size: clamp(2rem, 4.5vw, 3.7rem);
+/* =========================================================
+   TABLES / ADMIN-FRIENDLY DATA
+========================================================= */
+
+.table-responsive {
+    border-radius: var(--radius-md);
 }
 
-.page-title {
-    font-size: clamp(2rem, 4vw, 3.4rem);
+.table {
+    margin-bottom: 0;
+    color: var(--brand-text);
 }
 
-.section-title {
-    font-size: clamp(1.75rem, 3vw, 2.35rem);
+.table thead th {
+    padding: 0.85rem 0.8rem;
+    border-bottom: 1px solid var(--brand-border);
+    color: #6d736c;
+    font-size: 0.77rem;
+    font-weight: 800;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    white-space: nowrap;
 }
 
-.lead {
-    font-size: 1.08rem;
+.table tbody td {
+    padding: 0.9rem 0.8rem;
+    border-color: #edf0eb;
+    vertical-align: middle;
+    font-size: 0.93rem;
 }
 
-.form-label {
-    font-size: 0.95rem;
+.table tbody tr:hover {
+    background: #fafbf9;
 }
 
-/* Footer font refinement */
-.footer {
-    font-size: 0.92rem;
+.badge {
+    border-radius: 999px;
+    padding: 0.45em 0.7em;
+    font-size: 0.74rem;
+    font-weight: 700;
 }
 
-.footer-text {
-    font-size: 0.92rem;
-    line-height: 1.6;
-}
-
-.footer-heading {
-    font-size: 0.95rem;
-}
-
-.footer-list a,
-.footer p,
-.footer-bottom-link {
-    font-size: 0.9rem;
-}
-
-.social-links a {
-    font-size: 1rem;
-}
-
-.footer-logo {
-    height: 58px;
-}
-
-/* Better section spacing */
-section {
-    padding-top: 4.5rem;
-    padding-bottom: 4.5rem;
-}
-
-/* Slightly smaller navbar */
-.navbar {
-    padding-top: 0.7rem;
-    padding-bottom: 0.7rem;
-}
-
-/* Navbar links */
-.navbar-nav .nav-link {
-    font-size: 0.95rem;
-    font-weight: 500;
-}
-
-/* Brand/logo area */
-.navbar-brand img {
-    max-height: 62px;
-}
-
-/* Better form spacing */
-.booking-form-card,
-.quote-form-card {
-    padding: 2rem;
-}
-
-/* Reduce oversized hero spacing slightly */
-.page-hero {
-    padding-top: 5rem;
-    padding-bottom: 5rem;
-}
+/* =========================================================
+   JOURNEY ACTION GRID
+========================================================= */
 
 .journey-action-grid {
     display: grid;
-    grid-template-columns: repeat(4, 1fr);
-    gap: 1rem;
-    margin-top: 2rem;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: 0.9rem;
+    margin-top: 1.75rem;
 }
 
 .journey-action-grid .btn {
-    min-height: 54px;
+    width: 100%;
+    min-height: 50px;
     display: flex;
     align-items: center;
     justify-content: center;
-    font-weight: 600;
-    width: 100%;
 }
 
-/* Navbar and hero refinement */
-.navbar {
-    padding-top: 0.45rem;
-    padding-bottom: 0.45rem;
-}
-
-.navbar-brand img {
-    max-height: 54px;
-}
-
-.navbar-nav .nav-link {
-    font-size: 0.92rem;
-}
-
-/* Slightly shorter hero sections on inner pages */
-.page-hero {
-    min-height: 460px;
-    padding-top: 3.5rem;
-    padding-bottom: 3.5rem;
-}
-
-.page-title {
-    font-size: clamp(2rem, 3.6vw, 3.5rem);
-}
-
-.page-hero-text {
-    font-size: 1.05rem;
-    max-width: 780px;
-}
-
-/* =========================================
-   TOUR DETAILS PAGE
-========================================= */
+/* =========================================================
+   TOUR DETAILS
+========================================================= */
 
 .tour-anchor-nav {
     z-index: 1020;
-    background: #fff;
-    box-shadow: 0 4px 18px rgba(0,0,0,0.08);
+    background: rgba(255, 255, 255, 0.97);
+    border-bottom: 1px solid var(--brand-border);
+    box-shadow: 0 4px 16px rgba(17, 24, 17, 0.05);
 }
 
 .tour-anchor-nav a {
+    padding: 0.5rem 0.85rem;
+    border-radius: 10px;
+    color: #283027;
+    background: var(--brand-green-soft);
     text-decoration: none;
-    background: #f5f8f3;
-    padding: 0.55rem 1rem;
-    border-radius: 999px;
-    color: #1f2a1f;
-    transition: 0.3s ease;
+    font-size: 0.9rem;
+    font-weight: 700;
 }
 
 .tour-anchor-nav a:hover,
@@ -600,118 +756,20 @@ section {
 #pricing,
 #included,
 #book {
-    scroll-margin-top: 145px;
+    scroll-margin-top: 130px;
 }
 
 .tour-booking-summary {
     position: sticky;
-    top: 110px;
-    background: #fff;
-    border-radius: 22px;
-    padding: 1.25rem;
+    top: 100px;
     max-width: 430px;
     margin-left: auto;
-    box-shadow: 0 10px 35px rgba(0,0,0,0.08);
-    border: 1px solid rgba(0,0,0,0.05);
+    padding: 1.5rem;
 }
 
 .tour-booking-summary h3 {
-    font-size: 1.4rem;
     margin-bottom: 1rem;
-}
-
-.feature-box {
-    background: #fff;
-    border-radius: 18px;
-    padding: 1rem;
-    height: 100%;
-    box-shadow: 0 5px 18px rgba(0,0,0,0.05);
-    transition: 0.3s ease;
-}
-
-.feature-box:hover {
-    transform: translateY(-4px);
-}
-
-.feature-box i {
-    font-size: 1.5rem;
-    margin-bottom: 0.75rem;
-    color: var(--brand-color);
-}
-
-.feature-box h3 {
-    font-size: 1rem;
-    margin-bottom: 0.35rem;
-}
-
-.details-box {
-    background: #fff;
-    border-radius: 24px;
-    padding: 2rem;
-    box-shadow: 0 8px 25px rgba(0,0,0,0.06);
-}
-
-.details-box ul {
-    padding-left: 1.2rem;
-    margin-bottom: 1rem;
-}
-
-.details-box li {
-    margin-bottom: 0.7rem;
-}
-
-.booking-card {
-    background: rgba(255,255,255,0.10);
-    border: 1px solid rgba(255,255,255,0.15);
-    border-radius: 24px;
-    padding: 2rem;
-    text-align: center;
-    color: #fff;
-    backdrop-filter: blur(5px);
-}
-
-.booking-card i {
-    font-size: 2rem;
-    margin-bottom: 1rem;
-    color: #fff;
-}
-
-.booking-card h3,
-.booking-card p,
-.booking-card .display-6 {
-    color: #fff;
-}
-
-.booking-card .small {
-    color: rgba(255,255,255,0.85) !important;
-}
-
-.custom-tour-box {
-    background: #fff;
-    border-radius: 24px;
-    padding: 2rem;
-    box-shadow: 0 8px 25px rgba(0,0,0,0.05);
-    height: 100%;
-}
-
-.custom-tour-box ul {
-    padding-left: 1.2rem;
-    margin-bottom: 0;
-}
-
-.custom-tour-box li {
-    margin-bottom: 0.7rem;
-}
-
-.tour-long-description {
-    background: #fff;
-    border-radius: 24px;
-    padding: 2rem;
-    box-shadow: 0 8px 25px rgba(0,0,0,0.05);
-}
-
-.bg-brand-soft {
-    background: #f5f8f3;
+    font-size: 1.25rem;
 }
 
 .tour-detail-hero .page-title {
@@ -722,38 +780,183 @@ section {
     max-width: 700px;
 }
 
-/* =========================================
-   CUSTOMER ACCOUNT PAGES
-========================================= */
+/* Dark booking-card variant used on tour details */
+.bg-dark .booking-card,
+.booking-card.bg-dark {
+    background: rgba(255, 255, 255, 0.08);
+    border-color: rgba(255, 255, 255, 0.16);
+    color: #fff;
+    box-shadow: none;
+    backdrop-filter: blur(5px);
+}
+
+.bg-dark .booking-card h3,
+.bg-dark .booking-card p,
+.bg-dark .booking-card .display-6,
+.bg-dark .booking-card i {
+    color: #fff;
+}
+
+.bg-dark .booking-card .small {
+    color: rgba(255, 255, 255, 0.78) !important;
+}
+
+/* =========================================================
+   ACCOUNT / ADMIN HERO
+========================================================= */
 
 .account-header {
-    padding-top: 3rem;
-    padding-bottom: 3rem;
+    padding: 2.75rem 0;
     background-position: center;
     background-size: cover;
 }
 
 .account-header .page-title {
-    font-size: clamp(1.8rem, 3vw, 2.6rem);
+    font-size: clamp(1.8rem, 3vw, 2.55rem);
 }
 
 .account-header .page-hero-text {
-    font-size: 1rem;
     max-width: 720px;
+    font-size: 1rem;
 }
 
-@media (max-width: 768px) {
-    .account-header {
-        padding-top: 2.5rem;
-        padding-bottom: 2.5rem;
+/* =========================================================
+   CTA
+========================================================= */
+
+.final-cta {
+    padding: 4.5rem 0;
+    background:
+        linear-gradient(rgba(79, 100, 37, 0.92), rgba(79, 100, 37, 0.92)),
+        url('/assets/img/background-image.jpg') center/cover no-repeat;
+}
+
+/* =========================================================
+   FOOTER
+========================================================= */
+
+.footer {
+    font-size: 0.91rem;
+}
+
+.footer-logo {
+    height: 56px;
+    width: auto;
+    padding: 0.2rem;
+    background: #fff;
+    border-radius: 10px;
+}
+
+.footer-text {
+    color: #cdd2cb;
+    font-size: 0.91rem;
+    line-height: 1.65;
+}
+
+.footer-heading {
+    margin-bottom: 0.9rem;
+    font-size: 0.9rem;
+    font-weight: 800;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+}
+
+.footer-list {
+    list-style: none;
+    padding-left: 0;
+}
+
+.footer-list li {
+    margin-bottom: 0.45rem;
+}
+
+.footer a,
+.footer-list a,
+.footer-bottom-link {
+    color: #d5d9d3;
+    text-decoration: none;
+}
+
+.footer a:hover {
+    color: #fff;
+}
+
+.social-links a {
+    display: inline-flex;
+    width: 38px;
+    height: 38px;
+    align-items: center;
+    justify-content: center;
+    margin-right: 0.4rem;
+    border-radius: 10px;
+    background: var(--brand-green);
+    color: #fff;
+}
+
+.social-links a:hover {
+    background: #fff;
+    color: var(--brand-green-dark);
+}
+
+/* =========================================================
+   RESPONSIVE — TABLET
+========================================================= */
+
+@media (max-width: 1199px) {
+    .navbar-nav .nav-link {
+        padding-left: 0.5rem !important;
+        padding-right: 0.5rem !important;
+        font-size: 0.88rem;
+    }
+
+    .btn {
+        padding-left: 0.95rem;
+        padding-right: 0.95rem;
     }
 }
 
-@media (max-width: 991px) {
+@media (max-width: 991.98px) {
+    section {
+        padding-top: 3.75rem;
+        padding-bottom: 3.75rem;
+    }
+
+    .navbar {
+        min-height: 70px;
+    }
+
+    .site-logo,
+    .navbar-brand img {
+        height: 50px;
+        max-height: 50px;
+    }
+
+    .navbar-collapse {
+        margin-top: 0.75rem;
+        padding: 0.85rem 0 1rem;
+        border-top: 1px solid var(--brand-border);
+    }
+
+    .navbar-nav {
+        align-items: stretch !important;
+        gap: 0.2rem !important;
+    }
+
+    .navbar-nav .nav-link {
+        padding: 0.75rem 0.5rem !important;
+        font-size: 0.96rem;
+    }
+
+    .navbar-nav .btn {
+        width: 100%;
+        margin-top: 0.35rem;
+    }
 
     .tour-booking-summary {
         position: relative;
         top: auto;
+        max-width: none;
+        margin-left: 0;
     }
 
     .tour-anchor-nav {
@@ -765,85 +968,130 @@ section {
         flex-wrap: nowrap !important;
     }
 
-    .booking-card {
-        padding: 1.5rem;
+    .journey-action-grid {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
     }
 
     .custom-tour-box,
     .details-box,
-    .tour-long-description {
+    .tour-long-description,
+    .booking-form-card {
         padding: 1.5rem;
     }
 }
 
-/* =========================================
-   SMALLER TOUR HERO
-========================================= */
+/* =========================================================
+   RESPONSIVE — MOBILE
+========================================================= */
 
-.tour-detail-hero .page-title {
-    max-width: 760px;
-}
-
-.tour-detail-hero .page-hero-text {
-    max-width: 700px;
-}
-
-
-@media (max-width: 768px) {
-    .page-hero {
-        min-height: 370px;
-        padding-top: 3rem;
-        padding-bottom: 3rem;
+@media (max-width: 767.98px) {
+    body {
+        font-size: 1rem;
+        line-height: 1.6;
     }
-}
-
-@media (max-width: 992px) {
-
-    .journey-action-grid {
-        grid-template-columns: repeat(2, 1fr);
-    }
-}
-
-@media (max-width: 576px) {
-
-    .journey-action-grid {
-        grid-template-columns: 1fr;
-    }
-}
-
-/* Better mobile spacing */
-@media (max-width: 768px) {
 
     section {
-        padding-top: 3.5rem;
-        padding-bottom: 3.5rem;
-    }
-
-    .page-hero {
-        padding-top: 4rem;
-        padding-bottom: 4rem;
-    }
-
-    .booking-form-card,
-    .quote-form-card {
-        padding: 1.5rem;
-    }
-}
-
-@media (max-width: 768px) {
-    .site-logo {
-        height: 55px;
+        padding-top: 3.1rem;
+        padding-bottom: 3.1rem;
     }
 
     .hero-section {
-        padding: 3rem 0;
+        padding: 3.75rem 0;
     }
 
-    .hero-text {
+    .page-hero {
+        min-height: 340px;
+        padding: 3.25rem 0;
+    }
+
+    .hero-title {
+        font-size: clamp(2rem, 10vw, 3rem);
+        line-height: 1.08;
+    }
+
+    .page-title {
+        font-size: clamp(1.9rem, 9vw, 2.65rem);
+        line-height: 1.1;
+    }
+
+    .section-title {
+        font-size: clamp(1.55rem, 7vw, 2rem);
+    }
+
+    .hero-text,
+    .page-hero-text,
+    .lead {
         font-size: 1rem;
     }
 
-    .service-card img {
-        height: 210px;
+    .account-header {
+        padding: 2.25rem 0;
+    }
+
+    .account-header .page-title {
+        font-size: clamp(1.75rem, 8vw, 2.25rem);
+    }
+
+    .service-card img,
+    .tour-card-img {
+        height: 205px;
+    }
+
+    .booking-form-card,
+    .quote-form-card,
+    .custom-tour-box,
+    .details-box,
+    .tour-long-description {
+        padding: 1.25rem;
+        border-radius: var(--radius-md);
+    }
+
+    .booking-modal .modal-header,
+    .booking-modal .modal-body {
+        padding: 1rem;
+    }
+
+    .btn,
+    .btn-lg {
+        min-height: 46px;
+        font-size: 0.96rem;
+    }
+
+    .table thead th,
+    .table tbody td {
+        font-size: 0.88rem;
+    }
+}
+
+@media (max-width: 575.98px) {
+    .journey-action-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .site-logo,
+    .navbar-brand img {
+        height: 46px;
+        max-height: 46px;
+    }
+
+    .page-hero {
+        min-height: 310px;
+    }
+
+    .custom-tour-box,
+    .details-box,
+    .booking-form-card,
+    .tour-long-description {
+        padding: 1.1rem;
+    }
+
+    .d-flex.flex-column.flex-sm-row > .btn,
+    .d-flex.flex-column.flex-sm-row > form,
+    .d-flex.flex-column.flex-sm-row > form .btn {
+        width: 100%;
+    }
+
+    .modal-dialog {
+        margin: 0.65rem;
     }
 }
