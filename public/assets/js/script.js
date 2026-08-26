@@ -21,7 +21,7 @@ document.addEventListener('DOMContentLoaded', function () {
     const largeCasesSelect = document.getElementById('largeCasesSelect');
     const smallBagsSelect = document.getElementById('smallBagsSelect');
     const oversizedLuggage = document.getElementById('oversizedLuggage');
-    const extraStopSelect = document.getElementById('extraStopSelect');
+    const extraStopRadios = document.querySelectorAll('#airportBookingModal input[name="extra_stop"]');
     const manualLuggageMessage = document.getElementById('manualLuggageMessage');
     const modalElement = document.getElementById('airportBookingModal');
     const bookingTriggers = document.querySelectorAll('.airport-booking-trigger');
@@ -189,9 +189,16 @@ document.addEventListener('DOMContentLoaded', function () {
             smallBagsSelect.value = String(maxSmall);
         }
 
+        const selectedExtraStop = document.querySelector(
+            '#airportBookingModal input[name="extra_stop"]:checked'
+        );
+
         const needsManualCheck =
             (oversizedLuggage && oversizedLuggage.checked) ||
-            (extraStopSelect && extraStopSelect.value === 'yes');
+            (
+                selectedExtraStop &&
+                selectedExtraStop.value === 'yes'
+            );
 
         manualLuggageMessage.classList.toggle('d-none', !needsManualCheck);
     }
@@ -205,7 +212,14 @@ document.addEventListener('DOMContentLoaded', function () {
     if (largeCasesSelect) largeCasesSelect.addEventListener('change', updateLuggageRules);
     if (smallBagsSelect) smallBagsSelect.addEventListener('change', updateLuggageRules);
     if (oversizedLuggage) oversizedLuggage.addEventListener('change', updateLuggageRules);
-    if (extraStopSelect) extraStopSelect.addEventListener('change', updateLuggageRules);
+    extraStopRadios.forEach(function (radio) {
+
+        radio.addEventListener(
+            'change',
+            updateLuggageRules
+        );
+
+    });
 
     /*
     * Preselect pickup/drop-off from booking buttons.
@@ -234,25 +248,72 @@ document.addEventListener('DOMContentLoaded', function () {
     const draft = bookingData.draft || {};
 
     if (modalElement) {
+
         Object.entries(draft).forEach(function ([name, value]) {
-            const field = modalElement.querySelector(
+
+            const fields = modalElement.querySelectorAll(
                 '[name="' + CSS.escape(name) + '"]'
             );
 
-            if (!field) {
+            if (!fields.length) {
                 return;
             }
 
-            if (field.type === 'checkbox') {
-                field.checked = value === 'yes';
+            const firstField = fields[0];
+
+
+            /*
+            * Radio buttons:
+            * select the radio whose value matches
+            * the saved draft value.
+            */
+            if (firstField.type === 'radio') {
+
+                fields.forEach(function (field) {
+
+                    field.checked =
+                        field.value === String(value);
+
+                });
+
+
+            /*
+            * Checkbox:
+            * restore yes/no state.
+            */
+            } else if (firstField.type === 'checkbox') {
+
+                firstField.checked =
+                    value === 'yes';
+
+
+            /*
+            * Normal input/select.
+            */
             } else {
-                field.value = value ?? '';
+
+                firstField.value =
+                    value ?? '';
+
             }
 
-            field.dispatchEvent(
-                new Event('change', { bubbles: true })
-            );
+
+            /*
+            * Run any existing dynamic logic after restore.
+            */
+            fields.forEach(function (field) {
+
+                field.dispatchEvent(
+                    new Event(
+                        'change',
+                        { bubbles: true }
+                    )
+                );
+
+            });
+
         });
+
     }
 
 

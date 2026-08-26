@@ -1095,3 +1095,844 @@ section {
         margin: 0.65rem;
     }
 }
+
+/* =========================================================
+   MODERN ADMIN UI
+========================================================= */
+
+.admin-page-toolbar {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-end;
+    gap: 1.5rem;
+}
+
+.admin-page-title {
+    font-size: clamp(1.65rem, 2vw, 2.15rem);
+    font-weight: 700;
+    letter-spacing: -0.03em;
+}
+
+.admin-back-link {
+    display: inline-flex;
+    align-items: center;
+    color: #58606a;
+    font-size: 0.9rem;
+    font-weight: 600;
+    text-decoration: none;
+}
+
+.admin-back-link:hover {
+    color: #20252a;
+}
+
+.admin-primary-action {
+    border-radius: 0.7rem;
+    padding: 0.65rem 1rem;
+    font-size: 0.9rem;
+    font-weight: 600;
+}
+
+.admin-filter-bar {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+}
+
+.admin-search {
+    position: relative;
+    flex: 1;
+    max-width: 420px;
+}
+
+.admin-search i {
+    position: absolute;
+    left: 0.95rem;
+    top: 50%;
+    transform: translateY(-50%);
+    color: #8a9198;
+    pointer-events: none;
+}
+
+.admin-search .form-control {
+    padding-left: 2.6rem;
+}
+
+.admin-filter-bar .form-control,
+.admin-filter-bar .form-select {
+    min-height: 44px;
+    border-radius: 0.7rem;
+}
+
+.admin-filter-select {
+    width: auto;
+    min-width: 150px;
+}
+
+.admin-data-card {
+    background: #fff;
+    border: 1px solid rgba(20, 30, 35, 0.08);
+    border-radius: 1rem;
+    overflow: hidden;
+    box-shadow: 0 8px 30px rgba(20, 30, 35, 0.04);
+}
+
+.admin-table {
+    font-size: 0.94rem;
+}
+
+.admin-table thead th {
+    padding: 0.9rem 1.2rem;
+    border-bottom: 1px solid rgba(20, 30, 35, 0.08);
+    background: #fafbfa;
+    color: #6a7277;
+    font-size: 0.76rem;
+    font-weight: 700;
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+}
+
+.admin-table tbody td {
+    padding: 1rem 1.2rem;
+    border-bottom: 1px solid rgba(20, 30, 35, 0.07);
+    vertical-align: middle;
+}
+
+.admin-table tbody tr:last-child td {
+    border-bottom: 0;
+}
+
+.admin-table tbody tr:hover {
+    background: rgba(100, 128, 45, 0.035);
+}
+
+.admin-row-title {
+    padding: 0;
+    border: 0;
+    background: transparent;
+    color: #171b1e;
+    font-weight: 650;
+    text-align: left;
+}
+
+.admin-row-title:hover {
+    color: #66802d;
+}
+
+.admin-code {
+    color: #737b80;
+    font-size: 0.88rem;
+    font-weight: 600;
+    letter-spacing: 0.04em;
+}
+
+.admin-icon-button {
+    display: inline-flex;
+    justify-content: center;
+    align-items: center;
+    width: 36px;
+    height: 36px;
+    padding: 0;
+    border: 1px solid rgba(20, 30, 35, 0.14);
+    border-radius: 0.6rem;
+    background: #fff;
+    color: #343a3e;
+}
+
+.admin-icon-button:hover {
+    background: #f5f6f3;
+    color: #66802d;
+}
+
+.admin-status-toggle {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.45rem;
+    padding: 0.35rem 0.6rem;
+    border: 0;
+    border-radius: 999px;
+    background: transparent;
+    font-size: 0.84rem;
+    font-weight: 600;
+}
+
+.admin-status-toggle.active {
+    color: #167647;
+    background: #edf8f1;
+}
+
+.admin-status-toggle.inactive {
+    color: #697177;
+    background: #f0f1f2;
+}
+
+.admin-status-dot {
+    width: 7px;
+    height: 7px;
+    border-radius: 50%;
+    background: currentColor;
+}
+
+.admin-mobile-list {
+    display: grid;
+    gap: 0.8rem;
+}
+
+.admin-mobile-card {
+    padding: 1rem;
+    background: #fff;
+    border: 1px solid rgba(20, 30, 35, 0.08);
+    border-radius: 0.9rem;
+    box-shadow: 0 5px 20px rgba(20, 30, 35, 0.035);
+}
+
+.admin-mobile-title {
+    margin: 0 0 0.2rem;
+    font-size: 1rem;
+    font-weight: 700;
+}
+
+.admin-drawer {
+    width: min(440px, 100vw) !important;
+}
+
+.admin-drawer .offcanvas-header {
+    padding: 1.5rem;
+    border-bottom: 1px solid rgba(20, 30, 35, 0.08);
+}
+
+.admin-drawer .offcanvas-body {
+    padding: 1.5rem;
+}
+
+.admin-drawer .offcanvas-title {
+    font-size: 1.5rem;
+    font-weight: 700;
+    letter-spacing: -0.025em;
+}
+
+.admin-drawer .form-control,
+.admin-drawer .form-select {
+    min-height: 46px;
+    border-radius: 0.7rem;
+}
+
+.admin-setting-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 1.5rem;
+    padding: 1rem 0;
+    border-top: 1px solid rgba(20, 30, 35, 0.08);
+    border-bottom: 1px solid rgba(20, 30, 35, 0.08);
+}
+
+.admin-drawer-actions {
+    display: flex;
+    justify-content: flex-end;
+    gap: 0.7rem;
+    margin-top: 2rem;
+}
+
+.admin-secondary-button,
+.admin-save-button {
+    min-width: 90px;
+    padding: 0.6rem 1rem;
+    border-radius: 0.65rem;
+    font-size: 0.9rem;
+    font-weight: 600;
+}
+
+.admin-secondary-button {
+    border: 1px solid rgba(20, 30, 35, 0.15);
+    background: #fff;
+}
+
+.admin-toast {
+    border: 0;
+    border-radius: 0.75rem;
+    box-shadow: 0 12px 35px rgba(20, 30, 35, 0.18);
+}
+
+.admin-toast .toast-body {
+    padding: 0.9rem 1rem;
+    font-weight: 600;
+}
+
+
+/* =========================================================
+   RESPONSIVE ADMIN
+========================================================= */
+
+@media (max-width: 767.98px) {
+
+    .admin-page-toolbar {
+        align-items: stretch;
+        flex-direction: column;
+    }
+
+    .admin-primary-action {
+        width: 100%;
+    }
+
+    .admin-filter-bar {
+        align-items: stretch;
+        flex-direction: column;
+    }
+
+    .admin-search {
+        max-width: none;
+    }
+
+    .admin-filter-select {
+        width: 100%;
+    }
+
+    .admin-drawer-actions {
+        position: sticky;
+        bottom: 0;
+        padding-top: 1rem;
+        background: #fff;
+    }
+
+    .admin-drawer-actions .btn {
+        flex: 1;
+    }
+}
+
+.admin-airport-summary {
+    display: flex;
+    align-items: center;
+    gap: 0.9rem;
+    padding: 1rem;
+    border-radius: 0.8rem;
+    background: #f7f8f5;
+    border: 1px solid rgba(20, 30, 35, 0.07);
+}
+
+.admin-airport-summary-icon {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 42px;
+    height: 42px;
+    flex: 0 0 42px;
+    border-radius: 0.7rem;
+    background: rgba(102, 128, 45, 0.12);
+    color: #66802d;
+}
+
+/* =========================================================
+   AIRPORT BOOKING MODAL
+   Customer airport booking form
+========================================================= */
+
+#airportBookingModal .modal-dialog {
+    max-width: 900px;
+}
+
+#airportBookingModal .modal-content {
+    overflow: hidden;
+    border: 0;
+    border-radius: 14px;
+    background: #ffffff;
+    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.22);
+}
+
+
+/* =========================================================
+   HEADER
+========================================================= */
+
+#airportBookingModal .airport-booking-modal__header {
+    align-items: flex-start;
+    padding: 20px 24px 18px;
+    border-bottom: 1px solid #e5e8e4;
+    background: #ffffff;
+}
+
+#airportBookingModal .airport-booking-modal__header .section-label {
+    color: #6f8737;
+    font-size: 0.72rem;
+    font-weight: 700;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+}
+
+#airportBookingModal .modal-title {
+    margin: 0;
+    color: #202420;
+    font-size: 1.45rem;
+    font-weight: 700;
+    line-height: 1.2;
+}
+
+#airportBookingModal .btn-close {
+    flex-shrink: 0;
+    margin-top: 2px;
+}
+
+
+/* =========================================================
+   BODY
+========================================================= */
+
+#airportBookingModal .airport-booking-modal__body {
+    padding: 0;
+    background: #f5f6f3;
+}
+
+
+/* =========================================================
+   FORM SECTIONS
+========================================================= */
+
+#airportBookingModal .airport-booking-section {
+    padding: 22px 24px 24px;
+    background: #ffffff;
+    border-bottom: 1px solid #e5e8e4;
+}
+
+#airportBookingModal .airport-booking-section + .airport-booking-section {
+    margin-top: 6px;
+}
+
+#airportBookingModal .airport-booking-section__heading {
+    margin-bottom: 17px;
+}
+
+#airportBookingModal .airport-booking-section__heading h3 {
+    margin: 0;
+    color: #252a25;
+    font-size: 1rem;
+    font-weight: 700;
+}
+
+#airportBookingModal .airport-booking-section__heading p {
+    margin: 4px 0 0;
+    color: #747c75;
+    font-size: 0.82rem;
+    line-height: 1.45;
+}
+
+
+/* =========================================================
+   LABELS + FORM CONTROLS
+========================================================= */
+
+#airportBookingModal .form-label {
+    margin-bottom: 6px;
+    color: #303630;
+    font-size: 0.84rem;
+    font-weight: 650;
+}
+
+#airportBookingModal .form-control,
+#airportBookingModal .form-select {
+    min-height: 44px;
+    padding: 8px 12px;
+    border: 1px solid #d6dbd5;
+    border-radius: 7px;
+    background-color: #ffffff;
+    color: #252a25;
+    font-size: 0.92rem;
+    box-shadow: none;
+}
+
+#airportBookingModal .form-control::placeholder {
+    color: #9aa09b;
+}
+
+#airportBookingModal .form-control:focus,
+#airportBookingModal .form-select:focus {
+    border-color: #788f43;
+    box-shadow: 0 0 0 3px rgba(111, 135, 55, 0.11);
+}
+
+#airportBookingModal .form-text {
+    margin-top: 5px;
+    color: #7b837c;
+    font-size: 0.76rem;
+    line-height: 1.45;
+}
+
+
+/* =========================================================
+   ADDRESS SEARCH
+========================================================= */
+
+#airportBookingModal .airport-address-search-button {
+    min-height: 44px;
+    border-radius: 7px;
+    font-size: 0.86rem;
+    font-weight: 600;
+}
+
+#airportBookingModal .airport-address-search-button:disabled {
+    border-color: #d9ddd8;
+    background: #f5f6f4;
+    color: #929992;
+    opacity: 1;
+}
+
+#airportBookingModal .airport-address-api-note {
+    margin-top: 7px;
+}
+
+
+/* =========================================================
+   OPTIONS
+   Oversized luggage / Extra stop
+========================================================= */
+
+#airportBookingModal .airport-booking-option {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 20px;
+
+    padding: 13px 14px;
+
+    border: 1px solid #e0e4df;
+    border-radius: 8px;
+    background: #fafbf9;
+}
+
+#airportBookingModal .airport-booking-option__copy {
+    min-width: 0;
+}
+
+#airportBookingModal .airport-booking-option__copy strong {
+    display: block;
+    margin-bottom: 2px;
+    color: #303530;
+    font-size: 0.86rem;
+    font-weight: 700;
+}
+
+#airportBookingModal .airport-booking-option__copy span {
+    display: block;
+    color: #7a827b;
+    font-size: 0.76rem;
+    line-height: 1.4;
+}
+
+
+/* =========================================================
+   OVERSIZED LUGGAGE SWITCH
+========================================================= */
+
+#airportBookingModal .form-switch {
+    flex-shrink: 0;
+}
+
+#airportBookingModal .form-switch .form-check-input {
+    width: 2.4rem;
+    height: 1.25rem;
+    margin: 0;
+    cursor: pointer;
+}
+
+#airportBookingModal .form-switch .form-check-input:checked {
+    border-color: #6f8737;
+    background-color: #6f8737;
+}
+
+#airportBookingModal .form-switch .form-check-input:focus {
+    border-color: #788f43;
+    box-shadow: 0 0 0 3px rgba(111, 135, 55, 0.11);
+}
+
+
+/* =========================================================
+   EXTRA STOP — NO / YES
+========================================================= */
+
+#airportBookingModal .airport-extra-stop-choice {
+    display: inline-flex;
+    flex-shrink: 0;
+
+    padding: 3px;
+
+    border: 1px solid #d9ddd8;
+    border-radius: 8px;
+    background: #ffffff;
+}
+
+#airportBookingModal .airport-extra-stop-choice label {
+    margin: 0;
+    cursor: pointer;
+}
+
+#airportBookingModal .airport-extra-stop-choice input {
+    position: absolute;
+    opacity: 0;
+    pointer-events: none;
+}
+
+#airportBookingModal .airport-extra-stop-choice span {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    min-width: 52px;
+    min-height: 32px;
+
+    padding: 5px 10px;
+
+    border-radius: 5px;
+
+    color: #656c66;
+    font-size: 0.8rem;
+    font-weight: 650;
+
+    transition:
+        background-color 0.15s ease,
+        color 0.15s ease;
+}
+
+#airportBookingModal
+.airport-extra-stop-choice
+input:checked + span {
+    background: #e9efdf;
+    color: #536c25;
+}
+
+
+/* keyboard accessibility */
+
+#airportBookingModal
+.airport-extra-stop-choice
+input:focus-visible + span {
+    outline: 2px solid #788f43;
+    outline-offset: 1px;
+}
+
+
+/* =========================================================
+   NOTICES
+========================================================= */
+
+#airportBookingModal .airport-booking-notice {
+    display: flex;
+    align-items: flex-start;
+    gap: 9px;
+
+    padding: 11px 13px;
+
+    border-radius: 7px;
+
+    font-size: 0.8rem;
+    line-height: 1.5;
+}
+
+#airportBookingModal .airport-booking-notice i {
+    flex-shrink: 0;
+    margin-top: 3px;
+}
+
+#airportBookingModal .airport-booking-notice--warning {
+    border: 1px solid #ead99b;
+    background: #fff9e8;
+    color: #65541c;
+}
+
+
+/*
+   Bootstrap's d-none must remain able to hide our custom notices.
+*/
+#airportBookingModal .airport-booking-notice.d-none {
+    display: none !important;
+}
+
+
+/* =========================================================
+   BOTTOM ACTION AREA
+========================================================= */
+
+#airportBookingModal .airport-booking-actions {
+    position: sticky;
+    bottom: 0;
+    z-index: 10;
+
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 20px;
+
+    padding: 14px 24px;
+
+    border-top: 1px solid #e2e6e1;
+    background: rgba(255, 255, 255, 0.97);
+}
+
+#airportBookingModal .airport-booking-actions__note {
+    display: flex;
+    align-items: flex-start;
+    gap: 7px;
+
+    max-width: 410px;
+
+    color: #747c75;
+    font-size: 0.75rem;
+    line-height: 1.4;
+}
+
+#airportBookingModal .airport-booking-actions__note i {
+    flex-shrink: 0;
+    margin-top: 2px;
+    color: #6f8737;
+}
+
+#airportBookingModal .airport-booking-actions__buttons {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    flex-shrink: 0;
+}
+
+#airportBookingModal .airport-booking-actions__buttons .btn {
+    min-height: 40px;
+    padding: 7px 14px;
+    border-radius: 7px;
+    font-size: 0.82rem;
+    font-weight: 650;
+}
+
+
+/* =========================================================
+   TABLET
+========================================================= */
+
+@media (max-width: 767.98px) {
+
+    #airportBookingModal .modal-dialog {
+        max-width: none;
+    }
+
+    #airportBookingModal .airport-booking-actions {
+        align-items: stretch;
+        flex-direction: column;
+        gap: 10px;
+    }
+
+    #airportBookingModal .airport-booking-actions__note {
+        max-width: none;
+    }
+
+    #airportBookingModal .airport-booking-actions__buttons {
+        justify-content: flex-end;
+    }
+
+}
+
+
+/* =========================================================
+   PHONE
+========================================================= */
+
+@media (max-width: 575.98px) {
+
+    #airportBookingModal .modal-dialog {
+        margin: 0;
+    }
+
+    #airportBookingModal .modal-content {
+        min-height: 100dvh;
+        border-radius: 0;
+    }
+
+    #airportBookingModal .airport-booking-modal__header {
+        padding: 16px;
+    }
+
+    #airportBookingModal .modal-title {
+        font-size: 1.25rem;
+    }
+
+    #airportBookingModal .airport-booking-section {
+        padding: 19px 16px 20px;
+    }
+
+    #airportBookingModal .airport-booking-section + .airport-booking-section {
+        margin-top: 4px;
+    }
+
+
+    /* Options stack naturally on narrow phones */
+
+    #airportBookingModal .airport-booking-option {
+        align-items: flex-start;
+        flex-direction: column;
+        gap: 11px;
+    }
+
+
+    /* Yes / No occupies the available width */
+
+    #airportBookingModal .airport-extra-stop-choice {
+        width: 100%;
+    }
+
+    #airportBookingModal .airport-extra-stop-choice label {
+        flex: 1;
+    }
+
+    #airportBookingModal .airport-extra-stop-choice span {
+        width: 100%;
+    }
+
+
+    /* Bottom action area */
+
+    #airportBookingModal .airport-booking-actions {
+        padding:
+            10px
+            16px
+            calc(10px + env(safe-area-inset-bottom));
+    }
+
+    #airportBookingModal .airport-booking-actions__note {
+        font-size: 0.72rem;
+    }
+
+    #airportBookingModal .airport-booking-actions__buttons {
+        align-items: stretch;
+        flex-direction: column-reverse;
+        width: 100%;
+    }
+
+    #airportBookingModal .airport-booking-actions__buttons .btn {
+        width: 100%;
+        min-height: 43px;
+    }
+    /*
+    * Keep the oversized-luggage switch beside its text
+    * on small screens.
+    *
+    * Extra Stop remains stacked with the full-width
+    * No / Yes selector underneath.
+    */
+    #airportBookingModal
+    .airport-booking-option:has(.form-switch) {
+        flex-direction: row;
+        align-items: center;
+        justify-content: space-between;
+        gap: 14px;
+    }
+
+    #airportBookingModal
+    .airport-booking-option:has(.form-switch)
+    .airport-booking-option__copy {
+        flex: 1;
+        min-width: 0;
+    }
+
+    #airportBookingModal
+    .airport-booking-option:has(.form-switch)
+    .form-switch {
+        flex: 0 0 auto;
+        align-self: center;
+    }
+
+}

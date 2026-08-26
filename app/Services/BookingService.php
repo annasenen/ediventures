@@ -283,6 +283,8 @@ class BookingService
                         $booking['airport_name'],
                         $booking['zone_name'],
                         $booking['journey_type'],
+                        $journeyStart,
+                        $passengers,
                         20
                     );
 

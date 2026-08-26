@@ -15,6 +15,7 @@ if (!isset($_SESSION["pending_airport_booking"])) {
 require_once __DIR__ . '/../config/database.php';
 require_once __DIR__ . '/../app/Services/AirportPricingService.php';
 require_once __DIR__ . '/../app/Services/BookingService.php';
+require_once __DIR__ . '/../app/Services/PricingPeriodService.php';
 
 $booking =
     $_SESSION["pending_airport_booking"];
@@ -23,8 +24,15 @@ $customerID =
     (int)$_SESSION["customerID"];
 
 try {
+
+    $pricingPeriodService =
+        new PricingPeriodService($pdo);
+
     $pricingService =
-        new AirportPricingService($pdo);
+        new AirportPricingService(
+            $pdo,
+            $pricingPeriodService
+        );
 
     $bookingService =
         new BookingService(
@@ -69,7 +77,7 @@ try {
         $e->getMessage();
 
     header(
-        "Location: /airport-transfers.php?edit=1"
+        "Location: /airport-booking-check.php?resume=1&availability_changed=1"
     );
     exit;
 

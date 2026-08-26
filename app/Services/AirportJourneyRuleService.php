@@ -28,11 +28,17 @@ class AirportJourneyRuleService
         }
 
         $sql = "
-            SELECT blockMinutes
-            FROM airport_journey_rules
-            WHERE airportName = ?
-              AND journeyType = ?
-              AND isActive = 1
+            SELECT ajr.blockMinutes
+            FROM airport_journey_rules ajr
+
+            JOIN airports a
+                ON ajr.airportID = a.airportID
+
+            WHERE a.airportName = ?
+            AND a.isActive = 1
+            AND ajr.journeyType = ?
+            AND ajr.isActive = 1
+
             LIMIT 1
         ";
 

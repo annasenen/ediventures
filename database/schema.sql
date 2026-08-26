@@ -8,7 +8,14 @@ DROP TABLE IF EXISTS bookings;
 DROP TABLE IF EXISTS vehicle_blocks;
 DROP TABLE IF EXISTS airport_charges;
 DROP TABLE IF EXISTS airport_pricing;
+DROP TABLE IF EXISTS passenger_bands;
+DROP TABLE IF EXISTS pricing_period_days;
+DROP TABLE IF EXISTS pricing_periods;
 DROP TABLE IF EXISTS airport_journey_rules;
+DROP TABLE IF EXISTS zone_postcodes;
+DROP TABLE IF EXISTS zones;
+DROP TABLE IF EXISTS airports;
+DROP TABLE IF EXISTS airport_reference;
 DROP TABLE IF EXISTS vehicles;
 DROP TABLE IF EXISTS custom_tour_requests;
 DROP TABLE IF EXISTS customer_roles;
@@ -87,31 +94,146 @@ CREATE TABLE vehicles (
     createdAt DATETIME DEFAULT CURRENT_TIMESTAMP
 );
 
+CREATE TABLE airport_reference (
+    airportReferenceID INT AUTO_INCREMENT PRIMARY KEY,
+    airportName VARCHAR(150) NOT NULL,
+    iataCode VARCHAR(3) NOT NULL UNIQUE,
+    cityName VARCHAR(100) NULL,
+    countryName VARCHAR(100) NOT NULL,
+    isAvailable TINYINT(1) DEFAULT 1,
+    createdAt DATETIME DEFAULT CURRENT_TIMESTAMP
+);
+
+CREATE TABLE airports (
+    airportID INT AUTO_INCREMENT PRIMARY KEY,
+    airportName VARCHAR(100) NOT NULL UNIQUE,
+    airportCode VARCHAR(10) NULL UNIQUE,
+    isActive TINYINT(1) DEFAULT 1,
+    createdAt DATETIME DEFAULT CURRENT_TIMESTAMP,
+    updatedAt DATETIME DEFAULT CURRENT_TIMESTAMP
+        ON UPDATE CURRENT_TIMESTAMP
+);
+
+CREATE TABLE zones (
+    zoneID INT AUTO_INCREMENT PRIMARY KEY,
+    zoneName VARCHAR(50) NOT NULL UNIQUE,
+    description VARCHAR(255) NULL,
+    isActive TINYINT(1) DEFAULT 1,
+    createdAt DATETIME DEFAULT CURRENT_TIMESTAMP,
+    updatedAt DATETIME DEFAULT CURRENT_TIMESTAMP
+        ON UPDATE CURRENT_TIMESTAMP
+);
+
+CREATE TABLE zone_postcodes (
+    zonePostcodeID INT AUTO_INCREMENT PRIMARY KEY,
+    zoneID INT NOT NULL,
+    postcodePrefix VARCHAR(12) NOT NULL,
+    isActive TINYINT(1) DEFAULT 1,
+    createdAt DATETIME DEFAULT CURRENT_TIMESTAMP,
+
+    UNIQUE (zoneID, postcodePrefix),
+
+    FOREIGN KEY (zoneID) REFERENCES zones(zoneID)
+        ON DELETE CASCADE
+);
+
+CREATE TABLE pricing_periods (
+    pricingPeriodID INT AUTO_INCREMENT PRIMARY KEY,
+    periodName VARCHAR(100) NOT NULL,
+    startTime TIME NOT NULL,
+    endTime TIME NOT NULL,
+    priority INT NOT NULL DEFAULT 10,
+    isActive TINYINT(1) DEFAULT 1,
+    createdAt DATETIME DEFAULT CURRENT_TIMESTAMP,
+    updatedAt DATETIME DEFAULT CURRENT_TIMESTAMP
+        ON UPDATE CURRENT_TIMESTAMP
+);
+
+CREATE TABLE pricing_period_days (
+    pricingPeriodDayID INT AUTO_INCREMENT PRIMARY KEY,
+    pricingPeriodID INT NOT NULL,
+    dayOfWeek TINYINT NOT NULL,
+
+    UNIQUE (pricingPeriodID, dayOfWeek),
+
+    FOREIGN KEY (pricingPeriodID)
+        REFERENCES pricing_periods(pricingPeriodID)
+        ON DELETE CASCADE
+);
+
+CREATE TABLE passenger_bands (
+    passengerBandID INT AUTO_INCREMENT PRIMARY KEY,
+    bandName VARCHAR(100) NOT NULL,
+    minPassengers INT NOT NULL,
+    maxPassengers INT NOT NULL,
+    serviceType VARCHAR(30) NOT NULL,
+    isActive TINYINT(1) DEFAULT 1,
+    createdAt DATETIME DEFAULT CURRENT_TIMESTAMP,
+    updatedAt DATETIME DEFAULT CURRENT_TIMESTAMP
+        ON UPDATE CURRENT_TIMESTAMP,
+
+    UNIQUE (
+        serviceType,
+        minPassengers,
+        maxPassengers
+    )
+);
+
 CREATE TABLE airport_pricing (
     airportPriceID INT AUTO_INCREMENT PRIMARY KEY,
+
     vehicleID INT NOT NULL,
-    airportName VARCHAR(100) NOT NULL,
-    zoneName VARCHAR(50) NOT NULL,
+    airportID INT NOT NULL,
+    zoneID INT NOT NULL,
+    pricingPeriodID INT NOT NULL,
+    passengerBandID INT NOT NULL,
+
     journeyType VARCHAR(30) NOT NULL,
     basePrice DECIMAL(10,2) NOT NULL,
     isActive TINYINT(1) DEFAULT 1,
 
-    FOREIGN KEY (vehicleID) REFERENCES vehicles(vehicleID)
+    UNIQUE (
+        vehicleID,
+        airportID,
+        zoneID,
+        journeyType,
+        pricingPeriodID,
+        passengerBandID
+    ),
+
+    FOREIGN KEY (vehicleID)
+        REFERENCES vehicles(vehicleID)
         ON DELETE CASCADE,
 
-    UNIQUE (vehicleID, airportName, zoneName, journeyType)
+    FOREIGN KEY (airportID)
+        REFERENCES airports(airportID),
+
+    FOREIGN KEY (zoneID)
+        REFERENCES zones(zoneID),
+
+    FOREIGN KEY (pricingPeriodID)
+        REFERENCES pricing_periods(pricingPeriodID),
+
+    FOREIGN KEY (passengerBandID)
+        REFERENCES passenger_bands(passengerBandID)
 );
 
 CREATE TABLE airport_charges (
     airportChargeID INT AUTO_INCREMENT PRIMARY KEY,
-    airportName VARCHAR(100) NOT NULL,
+    airportID INT NOT NULL,
+
     pickupCharge DECIMAL(10,2) DEFAULT 0.00,
     dropoffCharge DECIMAL(10,2) DEFAULT 0.00,
+
     isActive TINYINT(1) DEFAULT 1,
+
     updatedAt DATETIME DEFAULT CURRENT_TIMESTAMP
         ON UPDATE CURRENT_TIMESTAMP,
 
-    UNIQUE (airportName)
+    UNIQUE (airportID),
+
+    FOREIGN KEY (airportID)
+        REFERENCES airports(airportID)
 );
 
 CREATE TABLE vehicle_blocks (
@@ -166,12 +288,21 @@ CREATE TABLE bookings (
 
 CREATE TABLE airport_journey_rules (
     airportRuleID INT AUTO_INCREMENT PRIMARY KEY,
-    airportName VARCHAR(100) NOT NULL,
+    airportID INT NOT NULL,
+
     journeyType VARCHAR(30) NOT NULL,
     blockMinutes INT NOT NULL,
+
     isActive TINYINT(1) DEFAULT 1,
+
     updatedAt DATETIME DEFAULT CURRENT_TIMESTAMP
         ON UPDATE CURRENT_TIMESTAMP,
 
-    UNIQUE (airportName, journeyType)
+    UNIQUE (
+        airportID,
+        journeyType
+    ),
+
+    FOREIGN KEY (airportID)
+        REFERENCES airports(airportID)
 );

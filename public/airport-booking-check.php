@@ -10,6 +10,8 @@ require_once __DIR__ . '/../config/database.php';
 require_once __DIR__ . '/../app/Services/VehicleAvailabilityService.php';
 require_once __DIR__ . '/../app/Services/AirportPricingService.php';
 require_once __DIR__ . '/../app/Services/AirportJourneyRuleService.php';
+require_once __DIR__ . '/../app/Services/ZoneService.php';
+require_once __DIR__ . '/../app/Services/PricingPeriodService.php';
 
 $errors = [];
 
@@ -248,31 +250,31 @@ if (empty($errors)) {
         $errors[] = $e->getMessage();
     }
 
-    /*
-     * Temporary postcode-zone logic.
-     * This will later be replaced by admin-controlled zones/address API.
-     */
-    $cleanPostcode = strtoupper(
-        preg_replace('/\s+/', '', $postcode)
-    );
+    try {
 
-    $postcodePrefix4 = substr($cleanPostcode, 0, 4);
+        $zoneService =
+            new ZoneService($pdo);
 
-    if (
-        $postcodePrefix4 === "EH30" ||
-        $postcodePrefix4 === "EH29" ||
-        $postcodePrefix4 === "EH28"
-    ) {
-        $zoneName = "Zone A";
+        $zone =
+            $zoneService->findZoneByPostcode(
+                $postcode
+            );
 
-    } elseif (
-        $postcodePrefix4 === "EH12" ||
-        $postcodePrefix4 === "KY11"
-    ) {
-        $zoneName = "Zone B";
+        if (!$zone) {
 
-    } else {
-        $errors[] = "This postcode is outside the current automatic booking zones. Please request a quote.";
+            $errors[] =
+                "This postcode is outside the current automatic booking zones. Please request a quote.";
+
+        } else {
+
+            $zoneName =
+                $zone["zoneName"];
+        }
+
+    } catch (InvalidArgumentException $e) {
+
+        $errors[] =
+            $e->getMessage();
     }
 }
 
@@ -315,8 +317,14 @@ if (empty($errors)) {
 
     try {
 
+        $pricingPeriodService =
+            new PricingPeriodService($pdo);
+
         $pricingService =
-            new AirportPricingService($pdo);
+            new AirportPricingService(
+                $pdo,
+                $pricingPeriodService
+            );
 
         $pricing =
             $pricingService->getAirportBookingPrice(
@@ -324,6 +332,8 @@ if (empty($errors)) {
                 $airportName,
                 $zoneName,
                 $journeyType,
+                $journeyStart,
+                (int)$passengers,
                 20
             );
 
@@ -471,22 +481,45 @@ include __DIR__ . '/../includes/nav.php';
             <div class="booking-form-card mx-auto">
 
                 <h2 class="section-title mb-3">
-                    Booking not available online
+                    <?php if (
+                        isset($_GET["availability_changed"]) &&
+                        $_GET["availability_changed"] === "1"
+                    ): ?>
+
+                        Availability changed while you were booking
+
+                    <?php else: ?>
+
+                        Booking not available online
+
+                    <?php endif; ?>
                 </h2>
 
                 <div class="alert alert-warning">
 
-                    <ul class="mb-0">
+                    <?php if (
+                        isset($_GET["availability_changed"]) &&
+                        $_GET["availability_changed"] === "1"
+                    ): ?>
 
-                        <?php foreach ($errors as $error): ?>
+                        Unfortunately, this journey is no longer available at the selected time.
+                        Please choose another time or request a quote.
 
-                            <li>
-                                <?= htmlspecialchars($error) ?>
-                            </li>
+                    <?php else: ?>
 
-                        <?php endforeach; ?>
+                        <ul class="mb-0">
 
-                    </ul>
+                            <?php foreach ($errors as $error): ?>
+
+                                <li>
+                                    <?= htmlspecialchars($error) ?>
+                                </li>
+
+                            <?php endforeach; ?>
+
+                        </ul>
+
+                    <?php endif; ?>
 
                 </div>
 
@@ -517,6 +550,17 @@ include __DIR__ . '/../includes/nav.php';
             <div class="booking-form-card mx-auto">
 
             <?php if (
+                isset($_GET["availability_changed"]) &&
+                $_GET["availability_changed"] === "1"
+            ): ?>
+
+                <div class="alert alert-warning">
+                    <strong>Availability changed while you were booking.</strong>
+                </div>
+
+            <?php endif; ?>
+
+            <?php if (
                 isset($_GET["price_changed"]) &&
                 $_GET["price_changed"] === "1"
             ): ?>
@@ -529,13 +573,20 @@ include __DIR__ . '/../includes/nav.php';
 
             <?php endif; ?>
 
-                <div class="alert alert-success">
+                <?php if (
+                    !isset($_GET["availability_changed"]) ||
+                    $_GET["availability_changed"] !== "1"
+                ): ?>
 
-                    <i class="fa-solid fa-circle-check me-2"></i>
+                    <div class="alert alert-success">
 
-                    This journey is currently available.
+                        <i class="fa-solid fa-circle-check me-2"></i>
 
-                </div>
+                        This journey is currently available.
+
+                    </div>
+
+                <?php endif; ?>
 
 
                 <!-- YOUR JOURNEY -->
@@ -795,19 +846,33 @@ include __DIR__ . '/../includes/nav.php';
                     </div>
 
 
-                    <form
-                        action="/airport-booking-save.php"
-                        method="post"
-                    >
+                    <div class="d-flex flex-column flex-sm-row gap-3">
 
-                        <button
-                            type="submit"
-                            class="btn btn-brand btn-lg rounded-pill px-5"
+                        <form
+                            action="/airport-booking-save.php"
+                            method="post"
                         >
-                            Proceed to Deposit Payment
-                        </button>
+                            <button
+                                type="submit"
+                                class="btn btn-brand btn-lg rounded-pill px-5"
+                            >
+                                Proceed to Deposit Payment
+                            </button>
+                        </form>
 
-                    </form>
+                        <form
+                            action="/airport-booking-cancel-quote.php"
+                            method="post"
+                        >
+                            <button
+                                type="submit"
+                                class="btn btn-outline-dark btn-lg rounded-pill px-5"
+                            >
+                                Cancel / Start Again
+                            </button>
+                        </form>
+
+                    </div>
 
 
                 <?php endif; ?>
