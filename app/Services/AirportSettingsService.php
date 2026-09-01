@@ -305,64 +305,1398 @@ class AirportSettingsService
         ]);
     }
 
-        public function getZones(): array
-        {
-            $sql = "
-                SELECT
-                    zoneID,
-                    zoneName,
-                    description,
-                    isActive
-                FROM zones
-                ORDER BY zoneName
-            ";
+    // =========================================================
+    // ZONES
+    // =========================================================
 
-            return $this->pdo
-                ->query($sql)
-                ->fetchAll(PDO::FETCH_ASSOC);
+    public function getZones(): array
+    {
+        $sql = "
+            SELECT
+                z.zoneID,
+                z.zoneName,
+                z.description,
+                z.isActive,
+
+                COUNT(
+                    CASE
+                        WHEN zp.isActive = 1
+                        THEN zp.zonePostcodeID
+                    END
+                ) AS postcodeCount
+
+            FROM zones z
+
+            LEFT JOIN zone_postcodes zp
+                ON z.zoneID = zp.zoneID
+
+            GROUP BY
+                z.zoneID,
+                z.zoneName,
+                z.description,
+                z.isActive
+
+            ORDER BY
+                z.zoneName
+        ";
+
+        return $this->pdo
+            ->query($sql)
+            ->fetchAll(PDO::FETCH_ASSOC);
+    }
+
+
+    public function getZoneById(
+        int $zoneID
+    ): ?array {
+        if ($zoneID < 1) {
+            return null;
         }
 
-        public function getPricingPeriods(): array
-        {
-            $sql = "
-                SELECT
-                    pricingPeriodID,
-                    periodName,
-                    startTime,
-                    endTime,
-                    priority,
-                    isActive
+        $stmt = $this->pdo->prepare("
+            SELECT
+                zoneID,
+                zoneName,
+                description,
+                isActive
+            FROM zones
+            WHERE zoneID = ?
+            LIMIT 1
+        ");
+
+        $stmt->execute([
+            $zoneID
+        ]);
+
+        $zone =
+            $stmt->fetch(PDO::FETCH_ASSOC);
+
+        return $zone ?: null;
+    }
+
+
+    public function getZonePostcodes(
+        int $zoneID
+    ): array {
+        if ($zoneID < 1) {
+            return [];
+        }
+
+        $stmt = $this->pdo->prepare("
+            SELECT
+                zonePostcodeID,
+                postcodePrefix,
+                isActive
+            FROM zone_postcodes
+            WHERE zoneID = ?
+            ORDER BY
+                CHAR_LENGTH(postcodePrefix) ASC,
+                postcodePrefix ASC
+        ");
+
+        $stmt->execute([
+            $zoneID
+        ]);
+
+        return $stmt->fetchAll(
+            PDO::FETCH_ASSOC
+        );
+    }
+
+
+    public function saveZone(
+        ?int $zoneID,
+        string $zoneName,
+        string $description,
+        bool $isActive
+    ): int {
+        $zoneName =
+            trim($zoneName);
+
+        $description =
+            trim($description);
+
+        if ($zoneName === '') {
+            throw new InvalidArgumentException(
+                'Zone name is required.'
+            );
+        }
+
+        if (strlen($zoneName) > 50) {
+            throw new InvalidArgumentException(
+                'Zone name cannot be longer than 50 characters.'
+            );
+        }
+
+        if (strlen($description) > 255) {
+            throw new InvalidArgumentException(
+                'Zone description cannot be longer than 255 characters.'
+            );
+        }
+
+        /*
+         * Edit existing zone.
+         */
+        if (
+            $zoneID !== null &&
+            $zoneID > 0
+        ) {
+            $stmt = $this->pdo->prepare("
+                UPDATE zones
+                SET
+                    zoneName = ?,
+                    description = ?,
+                    isActive = ?
+                WHERE zoneID = ?
+            ");
+
+            $stmt->execute([
+                $zoneName,
+                $description !== ''
+                    ? $description
+                    : null,
+                $isActive ? 1 : 0,
+                $zoneID
+            ]);
+
+            return $zoneID;
+        }
+
+        /*
+         * Add new zone.
+         */
+        $stmt = $this->pdo->prepare("
+            INSERT INTO zones
+            (
+                zoneName,
+                description,
+                isActive
+            )
+            VALUES (?, ?, ?)
+        ");
+
+        $stmt->execute([
+            $zoneName,
+            $description !== ''
+                ? $description
+                : null,
+            $isActive ? 1 : 0
+        ]);
+
+        return (int)$this->pdo->lastInsertId();
+    }
+
+
+    public function setZoneActive(
+        int $zoneID,
+        bool $isActive
+    ): void {
+        if ($zoneID < 1) {
+            throw new InvalidArgumentException(
+                'Invalid zone.'
+            );
+        }
+
+        $stmt = $this->pdo->prepare("
+            UPDATE zones
+            SET isActive = ?
+            WHERE zoneID = ?
+        ");
+
+        $stmt->execute([
+            $isActive ? 1 : 0,
+            $zoneID
+        ]);
+    }
+
+
+    public function addZonePostcode(
+        int $zoneID,
+        string $postcodePrefix
+    ): void {
+        if ($zoneID < 1) {
+            throw new InvalidArgumentException(
+                'Invalid zone.'
+            );
+        }
+
+        /*
+         * Admin may enter:
+         *
+         * EH30
+         * EH30 9
+         * EH30 9PP
+         *
+         * We store:
+         *
+         * EH30
+         * EH309
+         * EH309PP
+         *
+         * This matches ZoneService.
+         */
+        $postcodePrefix = strtoupper(
+            preg_replace(
+                '/\s+/',
+                '',
+                trim($postcodePrefix)
+            )
+        );
+
+        if ($postcodePrefix === '') {
+            throw new InvalidArgumentException(
+                'Postcode rule is required.'
+            );
+        }
+
+        if (
+            !preg_match(
+                '/^[A-Z0-9]+$/',
+                $postcodePrefix
+            )
+        ) {
+            throw new InvalidArgumentException(
+                'Please enter a valid postcode rule.'
+            );
+        }
+
+        if (strlen($postcodePrefix) > 8) {
+            throw new InvalidArgumentException(
+                'The postcode rule is too long.'
+            );
+        }
+
+        /*
+         * Confirm that the zone exists.
+         */
+        $zoneStmt = $this->pdo->prepare("
+            SELECT zoneID
+            FROM zones
+            WHERE zoneID = ?
+            LIMIT 1
+        ");
+
+        $zoneStmt->execute([
+            $zoneID
+        ]);
+
+        if ($zoneStmt->fetchColumn() === false) {
+            throw new InvalidArgumentException(
+                'The selected zone does not exist.'
+            );
+        }
+
+        /*
+         * Do not duplicate the same postcode rule
+         * inside the same zone.
+         */
+        /*
+        * The exact same postcode rule may only
+        * belong to one zone.
+        *
+        * Broader and more specific rules are allowed:
+        *
+        * Zone A -> EH30
+        * Zone B -> EH309
+        *
+        * ZoneService will use EH309 first because
+        * it is the more specific match.
+        */
+        $existingStmt = $this->pdo->prepare("
+            SELECT
+                zp.zonePostcodeID,
+                zp.zoneID,
+                z.zoneName
+            FROM zone_postcodes zp
+
+            JOIN zones z
+                ON zp.zoneID = z.zoneID
+
+            WHERE zp.postcodePrefix = ?
+
+            LIMIT 1
+        ");
+
+        $existingStmt->execute([
+            $postcodePrefix
+        ]);
+
+        $existing =
+            $existingStmt->fetch(PDO::FETCH_ASSOC);
+
+        if ($existing) {
+
+            throw new InvalidArgumentException(
+                $this->formatPostcodePrefixForDisplay(
+                    $postcodePrefix
+                ) .
+                ' is already assigned to ' .
+                $existing['zoneName'] .
+                '. Please use a more specific postcode rule if this area needs different pricing.'
+            );
+        }
+
+        $stmt = $this->pdo->prepare("
+            INSERT INTO zone_postcodes
+            (
+                zoneID,
+                postcodePrefix,
+                isActive
+            )
+            VALUES (?, ?, 1)
+        ");
+
+        $stmt->execute([
+            $zoneID,
+            $postcodePrefix
+        ]);
+    }
+
+
+    public function removeZonePostcode(
+        int $zonePostcodeID
+    ): void {
+        if ($zonePostcodeID < 1) {
+            throw new InvalidArgumentException(
+                'Invalid postcode rule.'
+            );
+        }
+
+        $stmt = $this->pdo->prepare("
+            DELETE FROM zone_postcodes
+            WHERE zonePostcodeID = ?
+        ");
+
+        $stmt->execute([
+            $zonePostcodeID
+        ]);
+    }
+
+
+    public function formatPostcodePrefixForDisplay(
+        string $postcodePrefix
+    ): string {
+        $postcodePrefix = strtoupper(
+            preg_replace(
+                '/\s+/',
+                '',
+                trim($postcodePrefix)
+            )
+        );
+
+        if ($postcodePrefix === '') {
+            return '';
+        }
+
+        /*
+        * Full UK postcode.
+        *
+        * Example:
+        * EH309BQ
+        * becomes:
+        * EH30 9BQ
+        */
+        if (
+            preg_match(
+                '/^([A-Z]{1,2}[0-9][0-9A-Z]?)([0-9][A-Z]{2})$/',
+                $postcodePrefix,
+                $matches
+            )
+        ) {
+            return
+                $matches[1] .
+                ' ' .
+                $matches[2];
+        }
+
+        /*
+        * Sector-level rule.
+        *
+        * Example:
+        * EH309
+        * becomes:
+        * EH30 9
+        *
+        * EH298
+        * becomes:
+        * EH29 8
+        */
+        if (
+            preg_match(
+                '/^([A-Z]{1,2}[0-9]{2})([0-9])$/',
+                $postcodePrefix,
+                $matches
+            )
+        ) {
+            return
+                $matches[1] .
+                ' ' .
+                $matches[2];
+        }
+
+        /*
+        * Broad district rules stay unchanged.
+        *
+        * Examples:
+        * EH30
+        * EH29
+        * EH6
+        */
+        return $postcodePrefix;
+    }
+
+
+
+    // =========================================================
+    // RATE / PRICING PERIODS
+    // =========================================================
+
+    public function getPricingPeriods(): array
+    {
+        $sql = "
+            SELECT
+                pp.pricingPeriodID,
+                pp.periodName,
+                pp.startTime,
+                pp.endTime,
+                pp.priority,
+                pp.isActive,
+                GROUP_CONCAT(
+                    ppd.dayOfWeek
+                    ORDER BY ppd.dayOfWeek ASC
+                    SEPARATOR ','
+                ) AS daysCsv
+            FROM pricing_periods pp
+            LEFT JOIN pricing_period_days ppd
+                ON pp.pricingPeriodID = ppd.pricingPeriodID
+            GROUP BY
+                pp.pricingPeriodID,
+                pp.periodName,
+                pp.startTime,
+                pp.endTime,
+                pp.priority,
+                pp.isActive
+            ORDER BY
+                pp.priority DESC,
+                pp.periodName ASC,
+                pp.pricingPeriodID ASC
+        ";
+
+        return $this->pdo
+            ->query($sql)
+            ->fetchAll(PDO::FETCH_ASSOC);
+    }
+
+
+    public function getPricingPeriodById(
+        int $pricingPeriodID
+    ): ?array {
+        if ($pricingPeriodID < 1) {
+            return null;
+        }
+
+        $stmt = $this->pdo->prepare("
+            SELECT
+                pricingPeriodID,
+                periodName,
+                startTime,
+                endTime,
+                priority,
+                isActive
+            FROM pricing_periods
+            WHERE pricingPeriodID = ?
+            LIMIT 1
+        ");
+
+        $stmt->execute([
+            $pricingPeriodID
+        ]);
+
+        $period =
+            $stmt->fetch(PDO::FETCH_ASSOC);
+
+        if (!$period) {
+            return null;
+        }
+
+        $period['days'] =
+            $this->getPricingPeriodDays(
+                $pricingPeriodID
+            );
+
+        return $period;
+    }
+
+
+    public function getPricingPeriodDays(
+        int $pricingPeriodID
+    ): array {
+        if ($pricingPeriodID < 1) {
+            return [];
+        }
+
+        $stmt = $this->pdo->prepare("
+            SELECT dayOfWeek
+            FROM pricing_period_days
+            WHERE pricingPeriodID = ?
+            ORDER BY dayOfWeek ASC
+        ");
+
+        $stmt->execute([
+            $pricingPeriodID
+        ]);
+
+        return array_map(
+            'intval',
+            $stmt->fetchAll(
+                PDO::FETCH_COLUMN
+            )
+        );
+    }
+
+
+    public function savePricingPeriod(
+        ?int $pricingPeriodID,
+        string $periodName,
+        string $startTime,
+        string $endTime,
+        int $priority,
+        array $days,
+        bool $isActive
+    ): int {
+        $periodName =
+            trim($periodName);
+
+        if ($periodName === '') {
+            throw new InvalidArgumentException(
+                'Rate period name is required.'
+            );
+        }
+
+        if (strlen($periodName) > 100) {
+            throw new InvalidArgumentException(
+                'Rate period name cannot be longer than 100 characters.'
+            );
+        }
+
+        $startTime =
+            $this->normalisePricingTime(
+                $startTime,
+                'Start time'
+            );
+
+        $endTime =
+            $this->normalisePricingTime(
+                $endTime,
+                'End time'
+            );
+
+        if ($startTime === $endTime) {
+            throw new InvalidArgumentException(
+                'Start time and end time must be different.'
+            );
+        }
+
+        if (
+            $priority < 1 ||
+            $priority > 1000
+        ) {
+            throw new InvalidArgumentException(
+                'Priority must be between 1 and 1000.'
+            );
+        }
+
+        $normalisedDays =
+            $this->normalisePricingDays(
+                $days
+            );
+
+        if (empty($normalisedDays)) {
+            throw new InvalidArgumentException(
+                'Choose at least one day.'
+            );
+        }
+
+        /*
+        * Active pricing periods must not overlap.
+        *
+        * Inactive periods are allowed to exist without
+        * affecting the live pricing schedule.
+        */
+        if ($isActive) {
+
+            $this->validatePricingPeriodOverlap(
+                $pricingPeriodID,
+                $startTime,
+                $endTime,
+                $normalisedDays
+            );
+        }
+
+        /*
+         * Avoid confusing duplicate names.
+         *
+         * This is a service-level integrity check.
+         */
+        $duplicateStmt =
+            $this->pdo->prepare("
+                SELECT pricingPeriodID
                 FROM pricing_periods
-                ORDER BY
-                    priority ASC,
-                    pricingPeriodID ASC
-            ";
+                WHERE LOWER(periodName) = LOWER(?)
+                  AND (
+                        ? IS NULL
+                        OR pricingPeriodID <> ?
+                      )
+                LIMIT 1
+            ");
 
-            return $this->pdo
-                ->query($sql)
-                ->fetchAll(PDO::FETCH_ASSOC);
+        $duplicateStmt->execute([
+            $periodName,
+            $pricingPeriodID,
+            $pricingPeriodID
+        ]);
+
+        if (
+            $duplicateStmt->fetchColumn() !==
+            false
+        ) {
+            throw new InvalidArgumentException(
+                'A rate period with this name already exists.'
+            );
         }
 
-        public function getPassengerBands(): array
-        {
-            $sql = "
-                SELECT
-                    passengerBandID,
-                    bandName,
-                    minPassengers,
-                    maxPassengers,
-                    isActive
-                FROM passenger_bands
-                WHERE serviceType = 'airport_transfer'
-                ORDER BY
-                    maxPassengers ASC,
-                    passengerBandID ASC
-            ";
+        $this->pdo->beginTransaction();
 
-            return $this->pdo
-                ->query($sql)
-                ->fetchAll(PDO::FETCH_ASSOC);
+        try {
+
+            if (
+                $pricingPeriodID !== null &&
+                $pricingPeriodID > 0
+            ) {
+
+                $existing =
+                    $this->getPricingPeriodById(
+                        $pricingPeriodID
+                    );
+
+                if (!$existing) {
+                    throw new InvalidArgumentException(
+                        'The selected rate period does not exist.'
+                    );
+                }
+
+                $stmt = $this->pdo->prepare("
+                    UPDATE pricing_periods
+                    SET
+                        periodName = ?,
+                        startTime = ?,
+                        endTime = ?,
+                        priority = ?,
+                        isActive = ?
+                    WHERE pricingPeriodID = ?
+                ");
+
+                $stmt->execute([
+                    $periodName,
+                    $startTime,
+                    $endTime,
+                    $priority,
+                    $isActive ? 1 : 0,
+                    $pricingPeriodID
+                ]);
+
+                $savedID =
+                    $pricingPeriodID;
+
+            } else {
+
+                $stmt = $this->pdo->prepare("
+                    INSERT INTO pricing_periods
+                    (
+                        periodName,
+                        startTime,
+                        endTime,
+                        priority,
+                        isActive
+                    )
+                    VALUES (?, ?, ?, ?, ?)
+                ");
+
+                $stmt->execute([
+                    $periodName,
+                    $startTime,
+                    $endTime,
+                    $priority,
+                    $isActive ? 1 : 0
+                ]);
+
+                $savedID =
+                    (int)$this->pdo
+                        ->lastInsertId();
+            }
+
+            /*
+             * Replace the day assignments as one
+             * transaction with the period itself.
+             */
+            $deleteDays =
+                $this->pdo->prepare("
+                    DELETE FROM pricing_period_days
+                    WHERE pricingPeriodID = ?
+                ");
+
+            $deleteDays->execute([
+                $savedID
+            ]);
+
+            $insertDay =
+                $this->pdo->prepare("
+                    INSERT INTO pricing_period_days
+                    (
+                        pricingPeriodID,
+                        dayOfWeek
+                    )
+                    VALUES (?, ?)
+                ");
+
+            foreach (
+                $normalisedDays
+                as $day
+            ) {
+                $insertDay->execute([
+                    $savedID,
+                    $day
+                ]);
+            }
+
+            $this->pdo->commit();
+
+            return $savedID;
+
+        } catch (Throwable $e) {
+
+            if ($this->pdo->inTransaction()) {
+                $this->pdo->rollBack();
+            }
+
+            throw $e;
         }
+    }
+
+
+    public function setPricingPeriodActive(
+        int $pricingPeriodID,
+        bool $isActive
+    ): void {
+
+        if ($pricingPeriodID < 1) {
+            throw new InvalidArgumentException(
+                'Invalid rate period.'
+            );
+        }
+
+        $existing =
+            $this->getPricingPeriodById(
+                $pricingPeriodID
+            );
+
+        if (!$existing) {
+            throw new InvalidArgumentException(
+                'The selected rate period does not exist.'
+            );
+        }
+
+        /*
+        * Before activating a period, make sure
+        * it does not overlap another active period.
+        */
+        if ($isActive) {
+
+            $this->validatePricingPeriodOverlap(
+                $pricingPeriodID,
+                (string)$existing['startTime'],
+                (string)$existing['endTime'],
+                $existing['days'] ?? []
+            );
+        }
+
+        $stmt = $this->pdo->prepare("
+            UPDATE pricing_periods
+            SET isActive = ?
+            WHERE pricingPeriodID = ?
+        ");
+
+        $stmt->execute([
+            $isActive ? 1 : 0,
+            $pricingPeriodID
+        ]);
+    }
+
+    public function getPricingPeriodCoverage(): array
+    {
+        $daySeconds =
+            24 * 60 * 60;
+
+        $weekSeconds =
+            7 * $daySeconds;
+
+        $intervals = [];
+
+        $periods =
+            $this->getPricingPeriods();
+
+        foreach ($periods as $period) {
+
+            if (
+                (int)$period['isActive'] !== 1
+            ) {
+                continue;
+            }
+
+            $days =
+                $this->normalisePricingDays(
+                    explode(
+                        ',',
+                        (string)(
+                            $period['daysCsv'] ?? ''
+                        )
+                    )
+                );
+
+            if (empty($days)) {
+                continue;
+            }
+
+            $periodIntervals =
+                $this->pricingPeriodWeekIntervals(
+                    (string)$period['startTime'],
+                    (string)$period['endTime'],
+                    $days
+                );
+
+            foreach (
+                $periodIntervals
+                as $interval
+            ) {
+                $intervals[] =
+                    $interval;
+            }
+        }
+
+        /*
+        * No active periods means the whole
+        * week is uncovered.
+        */
+        if (empty($intervals)) {
+
+            return [
+                'isComplete' => false,
+                'gaps' =>
+                    $this->buildPricingCoverageGaps(
+                        [
+                            [
+                                'start' => 0,
+                                'end' => $weekSeconds
+                            ]
+                        ]
+                    )
+            ];
+        }
+
+        /*
+        * Sort all intervals by their start time.
+        */
+        usort(
+            $intervals,
+            static function (
+                array $a,
+                array $b
+            ): int {
+                return
+                    $a['start'] <=>
+                    $b['start'];
+            }
+        );
+
+        /*
+        * Merge touching or overlapping intervals.
+        *
+        * Overlaps should normally already have
+        * been prevented, but merging also makes
+        * the coverage calculation robust.
+        */
+        $merged = [];
+
+        foreach ($intervals as $interval) {
+
+            if (empty($merged)) {
+
+                $merged[] =
+                    $interval;
+
+                continue;
+            }
+
+            $lastIndex =
+                count($merged) - 1;
+
+            if (
+                $interval['start'] <=
+                $merged[$lastIndex]['end']
+            ) {
+
+                $merged[$lastIndex]['end'] =
+                    max(
+                        $merged[$lastIndex]['end'],
+                        $interval['end']
+                    );
+
+                continue;
+            }
+
+            $merged[] =
+                $interval;
+        }
+
+        /*
+        * Find uncovered sections of the week.
+        */
+        $gaps = [];
+
+        $cursor = 0;
+
+        foreach ($merged as $interval) {
+
+            if (
+                $interval['start'] >
+                $cursor
+            ) {
+
+                $gaps[] = [
+                    'start' => $cursor,
+                    'end' =>
+                        $interval['start']
+                ];
+            }
+
+            $cursor =
+                max(
+                    $cursor,
+                    $interval['end']
+                );
+        }
+
+        if ($cursor < $weekSeconds) {
+
+            $gaps[] = [
+                'start' => $cursor,
+                'end' => $weekSeconds
+            ];
+        }
+
+        return [
+            'isComplete' =>
+                empty($gaps),
+
+            'gaps' =>
+                $this->buildPricingCoverageGaps(
+                    $gaps
+                )
+        ];
+    }
+
+    private function buildPricingCoverageGaps(
+        array $gaps
+    ): array {
+
+        $daySeconds =
+            24 * 60 * 60;
+
+        $dayNames = [
+            1 => 'Monday',
+            2 => 'Tuesday',
+            3 => 'Wednesday',
+            4 => 'Thursday',
+            5 => 'Friday',
+            6 => 'Saturday',
+            7 => 'Sunday'
+        ];
+
+        $result = [];
+
+        foreach ($gaps as $gap) {
+
+            $cursor =
+                (int)$gap['start'];
+
+            $gapEnd =
+                (int)$gap['end'];
+
+            while ($cursor < $gapEnd) {
+
+                $dayIndex =
+                    intdiv(
+                        $cursor,
+                        $daySeconds
+                    );
+
+                /*
+                * Safety guard.
+                */
+                if (
+                    $dayIndex < 0 ||
+                    $dayIndex > 6
+                ) {
+                    break;
+                }
+
+                $dayNumber =
+                    $dayIndex + 1;
+
+                $dayStart =
+                    $dayIndex *
+                    $daySeconds;
+
+                $dayEnd =
+                    $dayStart +
+                    $daySeconds;
+
+                $segmentEnd =
+                    min(
+                        $gapEnd,
+                        $dayEnd
+                    );
+
+                $startWithinDay =
+                    $cursor -
+                    $dayStart;
+
+                $endWithinDay =
+                    $segmentEnd -
+                    $dayStart;
+
+                $result[] = [
+                    'day' =>
+                        $dayNumber,
+
+                    'dayLabel' =>
+                        $dayNames[$dayNumber],
+
+                    'startTime' =>
+                        $this
+                            ->formatPricingCoverageTime(
+                                $startWithinDay
+                            ),
+
+                    'endTime' =>
+                        $this
+                            ->formatPricingCoverageTime(
+                                $endWithinDay
+                            )
+                ];
+
+                $cursor =
+                    $segmentEnd;
+            }
+        }
+
+        return $result;
+    }
+
+
+    private function formatPricingCoverageTime(
+        int $seconds
+    ): string {
+
+        /*
+        * 24:00 is useful here to show the
+        * end of a calendar day clearly.
+        */
+        if ($seconds >= 86400) {
+            return '24:00';
+        }
+
+        if ($seconds < 0) {
+            $seconds = 0;
+        }
+
+        $hours =
+            intdiv(
+                $seconds,
+                3600
+            );
+
+        $minutes =
+            intdiv(
+                $seconds % 3600,
+                60
+            );
+
+        return sprintf(
+            '%02d:%02d',
+            $hours,
+            $minutes
+        );
+    }
+
+    private function validatePricingPeriodOverlap(
+        ?int $pricingPeriodID,
+        string $startTime,
+        string $endTime,
+        array $days
+    ): void {
+
+        $existingPeriods =
+            $this->getPricingPeriods();
+
+        foreach ($existingPeriods as $period) {
+
+            if (
+                (int)$period['isActive'] !== 1
+            ) {
+                continue;
+            }
+
+            $existingID =
+                (int)$period['pricingPeriodID'];
+
+            if (
+                $pricingPeriodID !== null &&
+                $existingID === $pricingPeriodID
+            ) {
+                continue;
+            }
+
+            $existingDays =
+                $this->normalisePricingDays(
+                    explode(
+                        ',',
+                        (string)(
+                            $period['daysCsv'] ?? ''
+                        )
+                    )
+                );
+
+            $newIntervals =
+                $this->pricingPeriodWeekIntervals(
+                    $startTime,
+                    $endTime,
+                    $days
+                );
+
+            $existingIntervals =
+                $this->pricingPeriodWeekIntervals(
+                    (string)$period['startTime'],
+                    (string)$period['endTime'],
+                    $existingDays
+                );
+
+            foreach ($newIntervals as $newInterval) {
+
+                foreach (
+                    $existingIntervals
+                    as $existingInterval
+                ) {
+
+                    if (
+                        $newInterval['start'] <
+                            $existingInterval['end'] &&
+                        $newInterval['end'] >
+                            $existingInterval['start']
+                    ) {
+
+                        throw new InvalidArgumentException(
+                            'This rate period overlaps with "' .
+                            (string)$period['periodName'] .
+                            '". Please choose different days or times.'
+                        );
+                    }
+                }
+            }
+        }
+    }
+
+
+    private function pricingPeriodWeekIntervals(
+        string $startTime,
+        string $endTime,
+        array $days
+    ): array {
+
+        $startSeconds =
+            $this->pricingTimeToSeconds(
+                $startTime
+            );
+
+        $endSeconds =
+            $this->pricingTimeToSeconds(
+                $endTime
+            );
+
+        $daySeconds =
+            24 * 60 * 60;
+
+        $weekSeconds =
+            7 * $daySeconds;
+
+        $intervals = [];
+
+        foreach ($days as $day) {
+
+            $dayIndex =
+                (int)$day - 1;
+
+            $start =
+                ($dayIndex * $daySeconds) +
+                $startSeconds;
+
+            if ($startSeconds < $endSeconds) {
+
+                $end =
+                    ($dayIndex * $daySeconds) +
+                    $endSeconds;
+
+            } else {
+
+                /*
+                * Overnight period.
+                *
+                * Example:
+                * Monday 22:00 -> Tuesday 07:00.
+                */
+                $end =
+                    (($dayIndex + 1) * $daySeconds) +
+                    $endSeconds;
+            }
+
+            /*
+            * Split an interval that crosses the
+            * Sunday -> Monday week boundary.
+            */
+            if ($end > $weekSeconds) {
+
+                $intervals[] = [
+                    'start' => $start,
+                    'end' => $weekSeconds
+                ];
+
+                $intervals[] = [
+                    'start' => 0,
+                    'end' => $end - $weekSeconds
+                ];
+
+            } else {
+
+                $intervals[] = [
+                    'start' => $start,
+                    'end' => $end
+                ];
+            }
+        }
+
+        return $intervals;
+    }
+
+
+    private function pricingTimeToSeconds(
+        string $time
+    ): int {
+
+        $parts =
+            array_map(
+                'intval',
+                explode(
+                    ':',
+                    $time
+                )
+            );
+
+        return
+            (($parts[0] ?? 0) * 3600) +
+            (($parts[1] ?? 0) * 60) +
+            ($parts[2] ?? 0);
+    }
+
+
+    private function normalisePricingTime(
+        string $time,
+        string $label
+    ): string {
+        $time =
+            trim($time);
+
+        if (
+            !preg_match(
+                '/^(?:[01]\d|2[0-3]):[0-5]\d(?::[0-5]\d)?$/',
+                $time
+            )
+        ) {
+            throw new InvalidArgumentException(
+                $label . ' is invalid.'
+            );
+        }
+
+        if (strlen($time) === 5) {
+            $time .= ':00';
+        }
+
+        return $time;
+    }
+
+
+    private function normalisePricingDays(
+        array $days
+    ): array {
+        $normalised = [];
+
+        foreach ($days as $day) {
+
+            if (
+                is_array($day) ||
+                is_object($day)
+            ) {
+                continue;
+            }
+
+            $dayNumber =
+                (int)$day;
+
+            if (
+                $dayNumber >= 1 &&
+                $dayNumber <= 7
+            ) {
+                $normalised[$dayNumber] =
+                    $dayNumber;
+            }
+        }
+
+        ksort($normalised);
+
+        return array_values(
+            $normalised
+        );
+    }
+
+    public function getPassengerBands(): array
+    {
+        $sql = "
+            SELECT
+                passengerBandID,
+                bandName,
+                minPassengers,
+                maxPassengers,
+                isActive
+            FROM passenger_bands
+            WHERE serviceType = 'airport_transfer'
+            ORDER BY
+                maxPassengers ASC,
+                passengerBandID ASC
+        ";
+
+        return $this->pdo
+            ->query($sql)
+            ->fetchAll(PDO::FETCH_ASSOC);
+    }
 
 
     // =========================================================

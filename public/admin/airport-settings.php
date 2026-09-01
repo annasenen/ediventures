@@ -121,10 +121,11 @@ include __DIR__ . '/../../includes/nav.php';
                     </p>
 
                     <a
-                        href="#"
+                        href="/admin/zones.php"
                         class="text-link"
                     >
-                        Coming next
+                        Manage Zones
+                        <i class="fa-solid fa-arrow-right ms-1"></i>
                     </a>
 
                 </div>
@@ -150,10 +151,11 @@ include __DIR__ . '/../../includes/nav.php';
                     </p>
 
                     <a
-                        href="#"
+                        href="/admin/rate-periods.php"
                         class="text-link"
                     >
-                        Coming next
+                        Manage Rate Periods
+                        <i class="fa-solid fa-arrow-right ms-1"></i>
                     </a>
 
                 </div>

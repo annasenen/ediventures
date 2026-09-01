@@ -1936,3 +1936,395 @@ input:focus-visible + span {
     }
 
 }
+
+/* =========================================================
+   ADMIN - ZONES
+========================================================= */
+
+.admin-zone-list {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+
+/* Individual zone */
+
+.admin-zone-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 24px;
+
+    background: #fff;
+    border: 1px solid #e4e7e1;
+    border-radius: 16px;
+
+    padding: 20px 22px;
+
+    transition:
+        border-color 0.2s ease,
+        box-shadow 0.2s ease,
+        transform 0.2s ease;
+}
+
+.admin-zone-row:hover {
+    border-color: #d5dacd;
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.05);
+}
+
+
+/* Left side */
+
+.admin-zone-row__main {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+
+    min-width: 0;
+}
+
+.admin-zone-row__icon {
+    width: 44px;
+    height: 44px;
+
+    flex: 0 0 44px;
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    border-radius: 12px;
+
+    background: #eef3e5;
+    color: #617f2b;
+
+    font-size: 18px;
+}
+
+.admin-zone-row__title {
+    font-size: 1.05rem;
+    font-weight: 700;
+    color: #18201b;
+    margin-bottom: 3px;
+}
+
+.admin-zone-row__description {
+    color: #68716b;
+    font-size: 0.93rem;
+    margin-bottom: 5px;
+}
+
+.admin-zone-row__meta {
+    color: #7b837e;
+    font-size: 0.84rem;
+}
+
+
+/* Right side */
+
+.admin-zone-row__actions {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+
+    flex-shrink: 0;
+}
+
+.admin-zone-row__actions form {
+    margin: 0;
+}
+
+
+/* =========================================================
+   STATUS
+========================================================= */
+
+.admin-status-button {
+    display: inline-flex;
+    align-items: center;
+    gap: 7px;
+
+    min-height: 36px;
+
+    padding: 7px 12px;
+
+    border: 0;
+    border-radius: 999px;
+
+    font-size: 0.86rem;
+    font-weight: 600;
+
+    cursor: pointer;
+
+    transition:
+        background 0.2s ease,
+        color 0.2s ease;
+}
+
+.admin-status-dot {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+}
+
+
+/* ACTIVE */
+
+.admin-status-button.is-active {
+    background: #e8f5ec;
+    color: #13723d;
+}
+
+.admin-status-button.is-active .admin-status-dot {
+    background: #16884a;
+}
+
+
+/* INACTIVE */
+
+.admin-status-button.is-inactive {
+    background: #f0f1f1;
+    color: #687078;
+}
+
+.admin-status-button.is-inactive .admin-status-dot {
+    background: #7d858b;
+}
+
+
+/* =========================================================
+   EDIT ICON
+========================================================= */
+
+.admin-icon-button {
+    width: 38px;
+    height: 38px;
+
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+
+    border: 1px solid #dfe3dc;
+    border-radius: 10px;
+
+    background: #fff;
+    color: #253029;
+
+    text-decoration: none;
+
+    transition:
+        background 0.2s ease,
+        border-color 0.2s ease,
+        transform 0.2s ease;
+}
+
+.admin-icon-button:hover {
+    background: #f5f7f2;
+    border-color: #cfd5ca;
+    color: #253029;
+    transform: translateY(-1px);
+}
+
+
+/* =========================================================
+   EMPTY STATE
+========================================================= */
+
+.admin-empty-state {
+    padding: 56px 24px;
+    text-align: center;
+
+    background: #fff;
+    border: 1px solid #e4e7e1;
+    border-radius: 16px;
+}
+
+.admin-empty-state > i {
+    font-size: 28px;
+    color: #66842f;
+    margin-bottom: 14px;
+}
+
+.admin-empty-state h3 {
+    font-size: 1.1rem;
+    margin-bottom: 6px;
+}
+
+.admin-empty-state p {
+    color: #707873;
+    margin: 0;
+}
+
+
+/* =========================================================
+   ZONE DRAWER
+========================================================= */
+
+.admin-drawer {
+    width: min(480px, 100vw) !important;
+}
+
+.admin-drawer .offcanvas-header {
+    padding: 26px 28px 22px;
+    border-bottom: 1px solid #e8eae6;
+}
+
+.admin-drawer .offcanvas-body {
+    padding: 28px;
+}
+
+.admin-setting-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 20px;
+
+    padding: 18px 0;
+
+    border-top: 1px solid #eceeea;
+    border-bottom: 1px solid #eceeea;
+}
+
+.admin-drawer-actions {
+    display: flex;
+    justify-content: flex-end;
+    gap: 10px;
+}
+
+.admin-secondary-button,
+.admin-save-button {
+    min-height: 44px;
+    padding-left: 20px;
+    padding-right: 20px;
+}
+
+
+/* =========================================================
+   POSTCODE CHIPS
+========================================================= */
+
+.admin-zone-chip-list {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+}
+
+.admin-zone-chip {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+
+    padding: 7px 8px 7px 12px;
+
+    background: #f1f4eb;
+    border: 1px solid #dde5d3;
+    border-radius: 999px;
+
+    color: #334022;
+    font-size: 0.88rem;
+    font-weight: 600;
+}
+
+.admin-zone-chip__remove {
+    width: 25px;
+    height: 25px;
+
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+
+    padding: 0;
+
+    border: 0;
+    border-radius: 50%;
+
+    background: transparent;
+    color: #78806f;
+
+    cursor: pointer;
+}
+
+.admin-zone-chip__remove:hover {
+    background: #dde5d3;
+    color: #253019;
+}
+
+
+/* =========================================================
+   MOBILE
+========================================================= */
+
+@media (max-width: 767.98px) {
+
+    .admin-zone-row {
+        align-items: flex-start;
+        gap: 14px;
+
+        padding: 17px;
+    }
+
+    .admin-zone-row__main {
+        align-items: flex-start;
+        gap: 12px;
+    }
+
+    .admin-zone-row__icon {
+        width: 40px;
+        height: 40px;
+        flex-basis: 40px;
+    }
+
+    .admin-zone-row__actions {
+        flex-direction: column;
+        align-items: flex-end;
+        gap: 7px;
+    }
+
+    .admin-status-button {
+        min-height: 32px;
+        padding: 5px 9px;
+        font-size: 0.78rem;
+    }
+
+    .admin-icon-button {
+        width: 34px;
+        height: 34px;
+    }
+
+    .admin-drawer .offcanvas-header {
+        padding: 22px 20px 18px;
+    }
+
+    .admin-drawer .offcanvas-body {
+        padding: 22px 20px;
+    }
+
+    .admin-drawer-actions {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+    }
+
+}
+
+
+/* Very small phones */
+
+@media (max-width: 430px) {
+
+    .admin-zone-row {
+        display: grid;
+        grid-template-columns: 1fr;
+    }
+
+    .admin-zone-row__actions {
+        flex-direction: row;
+        justify-content: space-between;
+        align-items: center;
+
+        padding-top: 12px;
+
+        border-top: 1px solid #eceeea;
+    }
+
+}

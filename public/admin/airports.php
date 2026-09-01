@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 require_once __DIR__ . '/../../includes/admin-auth.php';
 require_once __DIR__ . '/../../app/Services/AirportSettingsService.php';
 
@@ -9,8 +11,6 @@ $canonicalUrl = "https://www.ediventures.co.uk/admin/airports.php";
 
 $settingsService =
     new AirportSettingsService($pdo);
-
-$errors = [];
 
 
 /*
@@ -30,103 +30,6 @@ $csrfToken =
 
 /*
 |--------------------------------------------------------------------------
-| POST ACTIONS
-|--------------------------------------------------------------------------
-*/
-
-if ($_SERVER["REQUEST_METHOD"] === "POST") {
-
-    $submittedToken =
-        $_POST["csrf_token"] ?? "";
-
-    if (
-        !is_string($submittedToken) ||
-        !hash_equals(
-            $csrfToken,
-            $submittedToken
-        )
-    ) {
-        $errors[] =
-            "Your session security token is invalid. Please refresh the page and try again.";
-
-    } else {
-
-        $action =
-            $_POST["action"] ?? "";
-
-        try {
-
-            /*
-             * Add or edit airport.
-             */
-            if ($action === "add_airport") {
-
-                $settingsService->addAirportFromReference(
-                    (int)($_POST["airportReferenceID"] ?? 0),
-                    isset($_POST["isActive"])
-                );
-
-                header(
-                    "Location: /admin/airports.php?saved=1"
-                );
-
-                exit;
-            }
-
-
-            if ($action === "update_airport") {
-
-                $settingsService->setAirportActive(
-                    (int)($_POST["airportID"] ?? 0),
-                    isset($_POST["isActive"])
-                );
-
-                header(
-                    "Location: /admin/airports.php?saved=1"
-                );
-
-                exit;
-            }
-
-
-            /*
-             * Toggle active status.
-             */
-            if ($action === "toggle_airport") {
-
-                $settingsService->setAirportActive(
-                    (int)($_POST["airportID"] ?? 0),
-                    (int)($_POST["newState"] ?? 0) === 1
-                );
-
-                header(
-                    "Location: /admin/airports.php?status_updated=1"
-                );
-
-                exit;
-            }
-
-        } catch (InvalidArgumentException $e) {
-
-            $errors[] =
-                $e->getMessage();
-
-        } catch (PDOException $e) {
-
-            error_log(
-                "Airport admin database error: " .
-                $e->getMessage()
-            );
-
-            $errors[] =
-                "The airport could not be saved. Please check the details and try again.";
-        }
-    }
-}
-
-
-/*
-|--------------------------------------------------------------------------
 | LOAD AIRPORTS
 |--------------------------------------------------------------------------
 */
@@ -134,7 +37,7 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
 $airports =
     $settingsService->getAirports();
 
-    $airportReferences =
+$airportReferences =
     $settingsService->getAirportReferences();
 
 
@@ -191,8 +94,12 @@ include __DIR__ . '/../../includes/nav.php';
                 </h2>
 
                 <p class="text-muted mb-0">
-                    <?= count($airports) ?>
-                    airport<?= count($airports) === 1 ? "" : "s" ?>
+                    <span id="airportConfiguredCount">
+                        <?= count($airports) ?>
+                    </span>
+                    <span id="airportConfiguredLabel">
+                        airport<?= count($airports) === 1 ? "" : "s" ?>
+                    </span>
                     configured
                 </p>
 
@@ -202,34 +109,13 @@ include __DIR__ . '/../../includes/nav.php';
             <button
                 type="button"
                 class="btn btn-brand admin-primary-action"
-                data-bs-toggle="offcanvas"
-                data-bs-target="#airportDrawer"
-                onclick="openAddAirport()"
+                id="addAirportButton"
             >
                 <i class="fa-solid fa-plus me-2"></i>
                 Add Airport
             </button>
 
         </div>
-
-
-        <!-- ERRORS -->
-
-        <?php if (!empty($errors)): ?>
-
-            <div class="alert alert-danger">
-
-                <?php foreach ($errors as $error): ?>
-
-                    <div>
-                        <?= htmlspecialchars($error) ?>
-                    </div>
-
-                <?php endforeach; ?>
-
-            </div>
-
-        <?php endif; ?>
 
 
         <!-- SEARCH / FILTER -->
@@ -245,7 +131,7 @@ include __DIR__ . '/../../includes/nav.php';
                     id="airportSearch"
                     class="form-control"
                     placeholder="Search airports..."
-                    oninput="filterAirports()"
+                    autocomplete="off"
                 >
 
             </div>
@@ -254,7 +140,6 @@ include __DIR__ . '/../../includes/nav.php';
             <select
                 id="airportStatusFilter"
                 class="form-select admin-filter-select"
-                onchange="filterAirports()"
             >
                 <option value="all">
                     All statuses
@@ -319,11 +204,16 @@ include __DIR__ . '/../../includes/nav.php';
 
                         <tr
                             class="airport-item"
+                            data-airport-id="<?= (int)$airport["airportID"] ?>"
                             data-name="<?= htmlspecialchars(
-                                strtolower($airport["airportName"])
+                                strtolower($airport["airportName"]),
+                                ENT_QUOTES,
+                                'UTF-8'
                             ) ?>"
                             data-code="<?= htmlspecialchars(
-                                strtolower($airport["airportCode"] ?? "")
+                                strtolower($airport["airportCode"] ?? ""),
+                                ENT_QUOTES,
+                                'UTF-8'
                             ) ?>"
                             data-status="<?= $status ?>"
                         >
@@ -332,27 +222,24 @@ include __DIR__ . '/../../includes/nav.php';
 
                                 <button
                                     type="button"
-                                    class="admin-row-title"
-                                    data-bs-toggle="offcanvas"
-                                    data-bs-target="#airportDrawer"
-                                    onclick='openEditAirport(
-                                        <?= json_encode([
-                                            "airportID" =>
-                                                (int)$airport["airportID"],
-
-                                            "airportName" =>
-                                                $airport["airportName"],
-
-                                            "airportCode" =>
-                                                $airport["airportCode"] ?? "",
-
-                                            "isActive" =>
-                                                (int)$airport["isActive"]
-                                        ]) ?>
-                                    )'
+                                    class="admin-row-title js-airport-edit"
+                                    data-airport-id="<?= (int)$airport["airportID"] ?>"
+                                    data-airport-name="<?= htmlspecialchars(
+                                        $airport["airportName"],
+                                        ENT_QUOTES,
+                                        'UTF-8'
+                                    ) ?>"
+                                    data-airport-code="<?= htmlspecialchars(
+                                        $airport["airportCode"] ?? "",
+                                        ENT_QUOTES,
+                                        'UTF-8'
+                                    ) ?>"
+                                    data-active="<?= (int)$airport["isActive"] ?>"
                                 >
                                     <?= htmlspecialchars(
-                                        $airport["airportName"]
+                                        $airport["airportName"],
+                                        ENT_QUOTES,
+                                        'UTF-8'
                                     ) ?>
                                 </button>
 
@@ -363,7 +250,9 @@ include __DIR__ . '/../../includes/nav.php';
 
                                 <span class="admin-code">
                                     <?= htmlspecialchars(
-                                        $airport["airportCode"] ?? "—"
+                                        $airport["airportCode"] ?? "—",
+                                        ENT_QUOTES,
+                                        'UTF-8'
                                     ) ?>
                                 </span>
 
@@ -372,54 +261,20 @@ include __DIR__ . '/../../includes/nav.php';
 
                             <td>
 
-                                <form
-                                    method="post"
-                                    class="d-inline"
+                                <button
+                                    type="button"
+                                    class="admin-status-toggle js-airport-toggle <?= $status ?>"
+                                    data-airport-id="<?= (int)$airport["airportID"] ?>"
+                                    data-active="<?= (int)$airport["isActive"] ?>"
                                 >
+                                    <span class="admin-status-dot"></span>
 
-                                    <input
-                                        type="hidden"
-                                        name="csrf_token"
-                                        value="<?= htmlspecialchars($csrfToken) ?>"
-                                    >
-
-                                    <input
-                                        type="hidden"
-                                        name="action"
-                                        value="toggle_airport"
-                                    >
-
-                                    <input
-                                        type="hidden"
-                                        name="airportID"
-                                        value="<?= htmlspecialchars(
-                                            $airport["airportID"]
-                                        ) ?>"
-                                    >
-
-                                    <input
-                                        type="hidden"
-                                        name="newState"
-                                        value="<?= (int)$airport["isActive"] === 1
-                                            ? 0
-                                            : 1 ?>"
-                                    >
-
-
-                                    <button
-                                        type="submit"
-                                        class="admin-status-toggle <?= $status ?>"
-                                    >
-
-                                        <span class="admin-status-dot"></span>
-
+                                    <span class="js-airport-status-label">
                                         <?= (int)$airport["isActive"] === 1
                                             ? "Active"
                                             : "Inactive" ?>
-
-                                    </button>
-
-                                </form>
+                                    </span>
+                                </button>
 
                             </td>
 
@@ -428,26 +283,21 @@ include __DIR__ . '/../../includes/nav.php';
 
                                 <button
                                     type="button"
-                                    class="admin-icon-button"
+                                    class="admin-icon-button js-airport-edit"
                                     aria-label="Edit airport"
                                     title="Edit"
-                                    data-bs-toggle="offcanvas"
-                                    data-bs-target="#airportDrawer"
-                                    onclick='openEditAirport(
-                                        <?= json_encode([
-                                            "airportID" =>
-                                                (int)$airport["airportID"],
-
-                                            "airportName" =>
-                                                $airport["airportName"],
-
-                                            "airportCode" =>
-                                                $airport["airportCode"] ?? "",
-
-                                            "isActive" =>
-                                                (int)$airport["isActive"]
-                                        ]) ?>
-                                    )'
+                                    data-airport-id="<?= (int)$airport["airportID"] ?>"
+                                    data-airport-name="<?= htmlspecialchars(
+                                        $airport["airportName"],
+                                        ENT_QUOTES,
+                                        'UTF-8'
+                                    ) ?>"
+                                    data-airport-code="<?= htmlspecialchars(
+                                        $airport["airportCode"] ?? "",
+                                        ENT_QUOTES,
+                                        'UTF-8'
+                                    ) ?>"
+                                    data-active="<?= (int)$airport["isActive"] ?>"
                                 >
                                     <i class="fa-solid fa-pen"></i>
                                 </button>
@@ -487,11 +337,16 @@ include __DIR__ . '/../../includes/nav.php';
 
                 <div
                     class="admin-mobile-card airport-item"
+                    data-airport-id="<?= (int)$airport["airportID"] ?>"
                     data-name="<?= htmlspecialchars(
-                        strtolower($airport["airportName"])
+                        strtolower($airport["airportName"]),
+                        ENT_QUOTES,
+                        'UTF-8'
                     ) ?>"
                     data-code="<?= htmlspecialchars(
-                        strtolower($airport["airportCode"] ?? "")
+                        strtolower($airport["airportCode"] ?? ""),
+                        ENT_QUOTES,
+                        'UTF-8'
                     ) ?>"
                     data-status="<?= $status ?>"
                 >
@@ -502,13 +357,17 @@ include __DIR__ . '/../../includes/nav.php';
 
                             <h3 class="admin-mobile-title">
                                 <?= htmlspecialchars(
-                                    $airport["airportName"]
+                                    $airport["airportName"],
+                                    ENT_QUOTES,
+                                    'UTF-8'
                                 ) ?>
                             </h3>
 
                             <div class="admin-code">
                                 <?= htmlspecialchars(
-                                    $airport["airportCode"] ?? "—"
+                                    $airport["airportCode"] ?? "—",
+                                    ENT_QUOTES,
+                                    'UTF-8'
                                 ) ?>
                             </div>
 
@@ -517,24 +376,21 @@ include __DIR__ . '/../../includes/nav.php';
 
                         <button
                             type="button"
-                            class="admin-icon-button"
-                            data-bs-toggle="offcanvas"
-                            data-bs-target="#airportDrawer"
-                            onclick='openEditAirport(
-                                <?= json_encode([
-                                    "airportID" =>
-                                        (int)$airport["airportID"],
-
-                                    "airportName" =>
-                                        $airport["airportName"],
-
-                                    "airportCode" =>
-                                        $airport["airportCode"] ?? "",
-
-                                    "isActive" =>
-                                        (int)$airport["isActive"]
-                                ]) ?>
-                            )'
+                            class="admin-icon-button js-airport-edit"
+                            aria-label="Edit airport"
+                            title="Edit"
+                            data-airport-id="<?= (int)$airport["airportID"] ?>"
+                            data-airport-name="<?= htmlspecialchars(
+                                $airport["airportName"],
+                                ENT_QUOTES,
+                                'UTF-8'
+                            ) ?>"
+                            data-airport-code="<?= htmlspecialchars(
+                                $airport["airportCode"] ?? "",
+                                ENT_QUOTES,
+                                'UTF-8'
+                            ) ?>"
+                            data-active="<?= (int)$airport["isActive"] ?>"
                         >
                             <i class="fa-solid fa-pen"></i>
                         </button>
@@ -544,50 +400,20 @@ include __DIR__ . '/../../includes/nav.php';
 
                     <div class="mt-3">
 
-                        <form method="post">
+                        <button
+                            type="button"
+                            class="admin-status-toggle js-airport-toggle <?= $status ?>"
+                            data-airport-id="<?= (int)$airport["airportID"] ?>"
+                            data-active="<?= (int)$airport["isActive"] ?>"
+                        >
+                            <span class="admin-status-dot"></span>
 
-                            <input
-                                type="hidden"
-                                name="csrf_token"
-                                value="<?= htmlspecialchars($csrfToken) ?>"
-                            >
-
-                            <input
-                                type="hidden"
-                                name="action"
-                                value="toggle_airport"
-                            >
-
-                            <input
-                                type="hidden"
-                                name="airportID"
-                                value="<?= htmlspecialchars(
-                                    $airport["airportID"]
-                                ) ?>"
-                            >
-
-                            <input
-                                type="hidden"
-                                name="newState"
-                                value="<?= (int)$airport["isActive"] === 1
-                                    ? 0
-                                    : 1 ?>"
-                            >
-
-                            <button
-                                type="submit"
-                                class="admin-status-toggle <?= $status ?>"
-                            >
-
-                                <span class="admin-status-dot"></span>
-
+                            <span class="js-airport-status-label">
                                 <?= (int)$airport["isActive"] === 1
                                     ? "Active"
                                     : "Inactive" ?>
-
-                            </button>
-
-                        </form>
+                            </span>
+                        </button>
 
                     </div>
 
@@ -614,6 +440,7 @@ include __DIR__ . '/../../includes/nav.php';
     class="offcanvas offcanvas-end admin-drawer"
     tabindex="-1"
     id="airportDrawer"
+    aria-labelledby="airportDrawerTitle"
 >
 
     <div class="offcanvas-header">
@@ -646,12 +473,23 @@ include __DIR__ . '/../../includes/nav.php';
 
     <div class="offcanvas-body">
 
-        <form method="post" id="airportDrawerForm">
+        <div
+            id="airportAjaxMessage"
+            class="alert d-none"
+            role="status"
+            aria-live="polite"
+        ></div>
+
+        <form id="airportDrawerForm" novalidate>
 
             <input
                 type="hidden"
                 name="csrf_token"
-                value="<?= htmlspecialchars($csrfToken) ?>"
+                value="<?= htmlspecialchars(
+                    $csrfToken,
+                    ENT_QUOTES,
+                    'UTF-8'
+                ) ?>"
             >
 
             <input
@@ -695,28 +533,27 @@ include __DIR__ . '/../../includes/nav.php';
                         <?php foreach ($airportReferences as $reference): ?>
 
                             <option
-                                value="<?= htmlspecialchars(
-                                    $reference["airportReferenceID"]
-                                ) ?>"
-
+                                value="<?= (int)$reference["airportReferenceID"] ?>"
                                 <?= (int)$reference["isConfigured"] === 1
                                     ? "disabled"
                                     : "" ?>
                             >
-
                                 <?= htmlspecialchars(
-                                    $reference["airportName"]
+                                    $reference["airportName"],
+                                    ENT_QUOTES,
+                                    'UTF-8'
                                 ) ?>
-
                                 (<?= htmlspecialchars(
-                                    $reference["iataCode"]
+                                    $reference["iataCode"],
+                                    ENT_QUOTES,
+                                    'UTF-8'
                                 ) ?>)
-
                                 —
                                 <?= htmlspecialchars(
-                                    $reference["cityName"] ?? ""
+                                    $reference["cityName"] ?? "",
+                                    ENT_QUOTES,
+                                    'UTF-8'
                                 ) ?>
-
                             </option>
 
                         <?php endforeach; ?>
@@ -829,200 +666,21 @@ include __DIR__ . '/../../includes/nav.php';
      TOAST
 ========================================================= -->
 
-<?php if (
-    (isset($_GET["saved"]) && $_GET["saved"] === "1") ||
-    (
-        isset($_GET["status_updated"]) &&
-        $_GET["status_updated"] === "1"
-    )
-): ?>
-
 <div class="toast-container position-fixed bottom-0 end-0 p-3">
 
     <div
         id="airportToast"
         class="toast admin-toast"
         role="status"
+        aria-live="polite"
+        aria-atomic="true"
     >
-
-        <div class="toast-body">
-
-            <i class="fa-solid fa-circle-check me-2"></i>
-
-            <?= isset($_GET["saved"])
-                ? "Airport saved"
-                : "Airport status updated" ?>
-
-        </div>
-
+        <div class="toast-body" id="airportToastMessage"></div>
     </div>
 
 </div>
 
-<?php endif; ?>
 
-
-<script>
-
-function openAddAirport()
-{
-    document.getElementById(
-        "airportDrawerTitle"
-    ).textContent = "Add Airport";
-
-    document.getElementById(
-        "drawerAction"
-    ).value = "add_airport";
-
-    document.getElementById(
-        "drawerAirportID"
-    ).value = "";
-
-    document.getElementById(
-        "drawerAirportReference"
-    ).value = "";
-
-    document.getElementById(
-        "drawerAirportActive"
-    ).checked = true;
-
-    document.getElementById(
-        "airportAddFields"
-    ).classList.remove("d-none");
-
-    document.getElementById(
-        "airportEditFields"
-    ).classList.add("d-none");
-
-    document.getElementById(
-        "drawerAirportReference"
-    ).required = true;
-
-    document.getElementById(
-        "drawerSaveButton"
-    ).textContent = "Add Airport";
-}
-
-
-function openEditAirport(airport)
-{
-    document.getElementById(
-        "airportDrawerTitle"
-    ).textContent = "Airport Settings";
-
-    document.getElementById(
-        "drawerAction"
-    ).value = "update_airport";
-
-    document.getElementById(
-        "drawerAirportID"
-    ).value = airport.airportID;
-
-    document.getElementById(
-        "drawerAirportName"
-    ).textContent =
-        airport.airportName;
-
-    document.getElementById(
-        "drawerAirportCode"
-    ).textContent =
-        airport.airportCode ?? "";
-
-    document.getElementById(
-        "drawerAirportActive"
-    ).checked =
-        Number(airport.isActive) === 1;
-
-    document.getElementById(
-        "airportAddFields"
-    ).classList.add("d-none");
-
-    document.getElementById(
-        "airportEditFields"
-    ).classList.remove("d-none");
-
-    document.getElementById(
-        "drawerAirportReference"
-    ).required = false;
-
-    document.getElementById(
-        "drawerSaveButton"
-    ).textContent = "Save";
-}
-
-
-function filterAirports()
-{
-    const search =
-        document.getElementById(
-            "airportSearch"
-        ).value
-        .toLowerCase()
-        .trim();
-
-    const status =
-        document.getElementById(
-            "airportStatusFilter"
-        ).value;
-
-    const items =
-        document.querySelectorAll(
-            ".airport-item"
-        );
-
-    items.forEach(item => {
-
-        const name =
-            item.dataset.name ?? "";
-
-        const code =
-            item.dataset.code ?? "";
-
-        const itemStatus =
-            item.dataset.status ?? "";
-
-        const matchesSearch =
-            name.includes(search) ||
-            code.includes(search);
-
-        const matchesStatus =
-            status === "all" ||
-            status === itemStatus;
-
-        item.style.display =
-            matchesSearch &&
-            matchesStatus
-                ? ""
-                : "none";
-    });
-}
-
-
-document.addEventListener(
-    "DOMContentLoaded",
-    function () {
-
-        const toastElement =
-            document.getElementById(
-                "airportToast"
-            );
-
-        if (toastElement) {
-
-            const toast =
-                new bootstrap.Toast(
-                    toastElement,
-                    {
-                        delay: 2500
-                    }
-                );
-
-            toast.show();
-        }
-    }
-);
-
-</script>
-
+<script src="/assets/js/admin-airports.js"></script>
 
 <?php include __DIR__ . '/../../includes/footer.php'; ?>

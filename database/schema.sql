@@ -132,6 +132,7 @@ CREATE TABLE zone_postcodes (
     createdAt DATETIME DEFAULT CURRENT_TIMESTAMP,
 
     UNIQUE (zoneID, postcodePrefix),
+    UNIQUE (postcodePrefix),
 
     FOREIGN KEY (zoneID) REFERENCES zones(zoneID)
         ON DELETE CASCADE
