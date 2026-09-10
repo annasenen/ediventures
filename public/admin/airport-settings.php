@@ -181,10 +181,11 @@ include __DIR__ . '/../../includes/nav.php';
                     </p>
 
                     <a
-                        href="#"
+                        href="/admin/airport-prices.php"
                         class="text-link"
                     >
-                        Coming soon
+                        Manage Airport Prices
+                        <i class="fa-solid fa-arrow-right ms-1"></i>
                     </a>
 
                 </div>
@@ -210,10 +211,11 @@ include __DIR__ . '/../../includes/nav.php';
                     </p>
 
                     <a
-                        href="#"
+                        href="/admin/airport-charges.php"
                         class="text-link"
                     >
-                        Coming soon
+                        Manage Airport Charges
+                        <i class="fa-solid fa-arrow-right ms-1"></i>
                     </a>
 
                 </div>

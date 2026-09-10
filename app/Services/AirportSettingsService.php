@@ -1824,6 +1824,488 @@ class AirportSettingsService
     // AIRPORT PRICING
     // =========================================================
 
+    public function getAirportPriceMatrix(
+        int $vehicleID,
+        int $airportID,
+        int $zoneID,
+        string $journeyType
+    ): array {
+
+        /*
+        |--------------------------------------------------------------------------
+        | VALIDATE BASIC INPUT
+        |--------------------------------------------------------------------------
+        */
+
+        if ($vehicleID < 1) {
+            throw new InvalidArgumentException(
+                'Vehicle is required.'
+            );
+        }
+
+        if ($airportID < 1) {
+            throw new InvalidArgumentException(
+                'Airport is required.'
+            );
+        }
+
+        if ($zoneID < 1) {
+            throw new InvalidArgumentException(
+                'Zone is required.'
+            );
+        }
+
+        if (
+            !in_array(
+                $journeyType,
+                [
+                    'pickup',
+                    'dropoff'
+                ],
+                true
+            )
+        ) {
+            throw new InvalidArgumentException(
+                'Invalid journey type.'
+            );
+        }
+
+
+        /*
+        |--------------------------------------------------------------------------
+        | LOAD VEHICLE
+        |--------------------------------------------------------------------------
+        |
+        | Archived vehicles are not valid for new airport pricing.
+        |
+        */
+
+        $vehicleStmt =
+            $this->pdo->prepare("
+                SELECT
+                    vehicleID,
+                    vehicleName,
+                    passengerCapacity,
+                    isActive
+                FROM vehicles
+                WHERE vehicleID = ?
+                AND isArchived = 0
+                LIMIT 1
+            ");
+
+        $vehicleStmt->execute([
+            $vehicleID
+        ]);
+
+        $vehicle =
+            $vehicleStmt->fetch(
+                PDO::FETCH_ASSOC
+            );
+
+        if (!$vehicle) {
+            throw new InvalidArgumentException(
+                'The selected vehicle does not exist.'
+            );
+        }
+
+
+        /*
+        |--------------------------------------------------------------------------
+        | LOAD AIRPORT
+        |--------------------------------------------------------------------------
+        */
+
+        $airportStmt =
+            $this->pdo->prepare("
+                SELECT
+                    airportID,
+                    airportName,
+                    airportCode,
+                    isActive
+                FROM airports
+                WHERE airportID = ?
+                LIMIT 1
+            ");
+
+        $airportStmt->execute([
+            $airportID
+        ]);
+
+        $airport =
+            $airportStmt->fetch(
+                PDO::FETCH_ASSOC
+            );
+
+        if (!$airport) {
+            throw new InvalidArgumentException(
+                'The selected airport does not exist.'
+            );
+        }
+
+
+        /*
+        |--------------------------------------------------------------------------
+        | LOAD ZONE
+        |--------------------------------------------------------------------------
+        */
+
+        $zoneStmt =
+            $this->pdo->prepare("
+                SELECT
+                    zoneID,
+                    zoneName,
+                    description,
+                    isActive
+                FROM zones
+                WHERE zoneID = ?
+                LIMIT 1
+            ");
+
+        $zoneStmt->execute([
+            $zoneID
+        ]);
+
+        $zone =
+            $zoneStmt->fetch(
+                PDO::FETCH_ASSOC
+            );
+
+        if (!$zone) {
+            throw new InvalidArgumentException(
+                'The selected zone does not exist.'
+            );
+        }
+
+
+        /*
+        |--------------------------------------------------------------------------
+        | PASSENGER BANDS
+        |--------------------------------------------------------------------------
+        |
+        | Only active airport-transfer passenger bands are used as
+        | columns in the current pricing matrix.
+        |
+        */
+
+        $bandStmt =
+            $this->pdo->query("
+                SELECT
+                    passengerBandID,
+                    bandName,
+                    minPassengers,
+                    maxPassengers,
+                    isActive
+                FROM passenger_bands
+                WHERE serviceType = 'airport_transfer'
+                AND isActive = 1
+                ORDER BY
+                    maxPassengers ASC,
+                    passengerBandID ASC
+            ");
+
+        $passengerBands =
+            $bandStmt->fetchAll(
+                PDO::FETCH_ASSOC
+            );
+
+
+        /*
+        |--------------------------------------------------------------------------
+        | RATE PERIODS
+        |--------------------------------------------------------------------------
+        |
+        | Show:
+        |
+        | 1. all active Rate Periods;
+        | 2. inactive Rate Periods that already have prices attached
+        |    to this exact vehicle / airport / zone / journey.
+        |
+        | This means old pricing does not mysteriously disappear from
+        | the admin screen just because its Rate Period was deactivated.
+        |
+        */
+
+        $periodStmt =
+            $this->pdo->prepare("
+                SELECT
+                    pp.pricingPeriodID,
+                    pp.periodName,
+                    pp.startTime,
+                    pp.endTime,
+                    pp.isActive,
+
+                    GROUP_CONCAT(
+                        ppd.dayOfWeek
+                        ORDER BY ppd.dayOfWeek ASC
+                        SEPARATOR ','
+                    ) AS daysCsv,
+
+                    CASE
+                        WHEN EXISTS (
+                            SELECT 1
+                            FROM airport_pricing ap_existing
+                            WHERE ap_existing.vehicleID = ?
+                            AND ap_existing.airportID = ?
+                            AND ap_existing.zoneID = ?
+                            AND ap_existing.journeyType = ?
+                            AND ap_existing.pricingPeriodID =
+                                pp.pricingPeriodID
+                        )
+                        THEN 1
+                        ELSE 0
+                    END AS hasConfiguredPrices
+
+                FROM pricing_periods pp
+
+                LEFT JOIN pricing_period_days ppd
+                    ON pp.pricingPeriodID =
+                        ppd.pricingPeriodID
+
+                WHERE
+                    pp.isActive = 1
+
+                    OR EXISTS (
+                        SELECT 1
+                        FROM airport_pricing ap_visible
+                        WHERE ap_visible.vehicleID = ?
+                        AND ap_visible.airportID = ?
+                        AND ap_visible.zoneID = ?
+                        AND ap_visible.journeyType = ?
+                        AND ap_visible.pricingPeriodID =
+                            pp.pricingPeriodID
+                    )
+
+                GROUP BY
+                    pp.pricingPeriodID,
+                    pp.periodName,
+                    pp.startTime,
+                    pp.endTime,
+                    pp.isActive
+
+                ORDER BY
+                    pp.isActive DESC,
+                    pp.startTime ASC,
+                    pp.periodName ASC,
+                    pp.pricingPeriodID ASC
+            ");
+
+        $periodStmt->execute([
+            $vehicleID,
+            $airportID,
+            $zoneID,
+            $journeyType,
+
+            $vehicleID,
+            $airportID,
+            $zoneID,
+            $journeyType
+        ]);
+
+        $pricingPeriods =
+            $periodStmt->fetchAll(
+                PDO::FETCH_ASSOC
+            );
+
+
+        /*
+        |--------------------------------------------------------------------------
+        | EXISTING PRICES
+        |--------------------------------------------------------------------------
+        */
+
+        $priceStmt =
+            $this->pdo->prepare("
+                SELECT
+                    airportPriceID,
+                    pricingPeriodID,
+                    passengerBandID,
+                    basePrice,
+                    isActive
+                FROM airport_pricing
+                WHERE vehicleID = ?
+                AND airportID = ?
+                AND zoneID = ?
+                AND journeyType = ?
+                ORDER BY
+                    pricingPeriodID ASC,
+                    passengerBandID ASC
+            ");
+
+        $priceStmt->execute([
+            $vehicleID,
+            $airportID,
+            $zoneID,
+            $journeyType
+        ]);
+
+        $priceRows =
+            $priceStmt->fetchAll(
+                PDO::FETCH_ASSOC
+            );
+
+
+        /*
+        |--------------------------------------------------------------------------
+        | BUILD PRICE LOOKUP
+        |--------------------------------------------------------------------------
+        |
+        | Example:
+        |
+        | $prices[3][2]
+        |
+        | means:
+        |
+        | Rate Period ID 3
+        | Passenger Band ID 2
+        |
+        */
+
+        $prices = [];
+
+        foreach ($priceRows as $price) {
+
+            $pricingPeriodID =
+                (int)$price[
+                    'pricingPeriodID'
+                ];
+
+            $passengerBandID =
+                (int)$price[
+                    'passengerBandID'
+                ];
+
+            if (
+                !isset(
+                    $prices[
+                        $pricingPeriodID
+                    ]
+                )
+            ) {
+                $prices[
+                    $pricingPeriodID
+                ] = [];
+            }
+
+            $prices[
+                $pricingPeriodID
+            ][
+                $passengerBandID
+            ] = [
+                'airportPriceID' =>
+                    (int)$price[
+                        'airportPriceID'
+                    ],
+
+                'basePrice' =>
+                    (float)$price[
+                        'basePrice'
+                    ],
+
+                'isActive' =>
+                    (int)$price[
+                        'isActive'
+                    ] === 1
+            ];
+        }
+
+
+        /*
+        |--------------------------------------------------------------------------
+        | CHECK MATRIX COMPLETENESS
+        |--------------------------------------------------------------------------
+        |
+        | Only ACTIVE Rate Periods and ACTIVE passenger bands matter
+        | for customer-facing pricing.
+        |
+        | A missing price or an inactive price is considered incomplete.
+        |
+        */
+
+        $missingCount = 0;
+
+        foreach (
+            $pricingPeriods
+            as $period
+        ) {
+
+            if (
+                (int)$period[
+                    'isActive'
+                ] !== 1
+            ) {
+                continue;
+            }
+
+            $pricingPeriodID =
+                (int)$period[
+                    'pricingPeriodID'
+                ];
+
+            foreach (
+                $passengerBands
+                as $band
+            ) {
+
+                $passengerBandID =
+                    (int)$band[
+                        'passengerBandID'
+                    ];
+
+                $price =
+                    $prices[
+                        $pricingPeriodID
+                    ][
+                        $passengerBandID
+                    ] ?? null;
+
+                if (
+                    !$price ||
+                    $price[
+                        'isActive'
+                    ] !== true
+                ) {
+                    $missingCount++;
+                }
+            }
+        }
+
+
+        /*
+        |--------------------------------------------------------------------------
+        | RETURN MATRIX DATA
+        |--------------------------------------------------------------------------
+        */
+
+        return [
+            'vehicle' =>
+                $vehicle,
+
+            'airport' =>
+                $airport,
+
+            'zone' =>
+                $zone,
+
+            'journeyType' =>
+                $journeyType,
+
+            'pricingPeriods' =>
+                $pricingPeriods,
+
+            'passengerBands' =>
+                $passengerBands,
+
+            'prices' =>
+                $prices,
+
+            'missingCount' =>
+                $missingCount,
+
+            'isComplete' =>
+                $missingCount === 0
+        ];
+    }
+
     public function getAirportPrices(): array
     {
         $sql = "
@@ -1902,6 +2384,13 @@ class AirportSettingsService
         float $basePrice,
         bool $isActive
     ): void {
+
+        /*
+        |--------------------------------------------------------------------------
+        | BASIC VALIDATION
+        |--------------------------------------------------------------------------
+        */
+
         if ($vehicleID < 1) {
             throw new InvalidArgumentException(
                 'Vehicle is required.'
@@ -1922,7 +2411,7 @@ class AirportSettingsService
 
         if ($pricingPeriodID < 1) {
             throw new InvalidArgumentException(
-                'Pricing period is required.'
+                'Rate period is required.'
             );
         }
 
@@ -1932,17 +2421,222 @@ class AirportSettingsService
             );
         }
 
-        if (!in_array($journeyType, ['pickup', 'dropoff'], true)) {
+        if (
+            !in_array(
+                $journeyType,
+                [
+                    'pickup',
+                    'dropoff'
+                ],
+                true
+            )
+        ) {
             throw new InvalidArgumentException(
                 'Invalid journey type.'
             );
         }
 
-        if ($basePrice < 0) {
+        if (
+            !is_finite($basePrice) ||
+            $basePrice < 0
+        ) {
             throw new InvalidArgumentException(
-                'Price cannot be negative.'
+                'Please enter a valid price.'
             );
         }
+
+        /*
+        * airport_pricing.basePrice is DECIMAL(10,2).
+        */
+        if ($basePrice > 99999999.99) {
+            throw new InvalidArgumentException(
+                'The price is too large.'
+            );
+        }
+
+        $basePrice =
+            round(
+                $basePrice,
+                2
+            );
+
+
+        /*
+        |--------------------------------------------------------------------------
+        | VERIFY VEHICLE
+        |--------------------------------------------------------------------------
+        |
+        | An inactive vehicle may still have prices configured in advance,
+        | but an archived vehicle must not receive new pricing.
+        |
+        */
+
+        $vehicleStmt =
+            $this->pdo->prepare("
+                SELECT vehicleID
+                FROM vehicles
+                WHERE vehicleID = ?
+                AND isArchived = 0
+                LIMIT 1
+            ");
+
+        $vehicleStmt->execute([
+            $vehicleID
+        ]);
+
+        if (
+            $vehicleStmt->fetchColumn() ===
+            false
+        ) {
+            throw new InvalidArgumentException(
+                'The selected vehicle is not available for pricing.'
+            );
+        }
+
+
+        /*
+        |--------------------------------------------------------------------------
+        | VERIFY AIRPORT
+        |--------------------------------------------------------------------------
+        |
+        | We verify existence rather than requiring isActive = 1.
+        | This allows prices to be prepared before an airport is made live.
+        |
+        */
+
+        $airportStmt =
+            $this->pdo->prepare("
+                SELECT airportID
+                FROM airports
+                WHERE airportID = ?
+                LIMIT 1
+            ");
+
+        $airportStmt->execute([
+            $airportID
+        ]);
+
+        if (
+            $airportStmt->fetchColumn() ===
+            false
+        ) {
+            throw new InvalidArgumentException(
+                'The selected airport does not exist.'
+            );
+        }
+
+
+        /*
+        |--------------------------------------------------------------------------
+        | VERIFY ZONE
+        |--------------------------------------------------------------------------
+        */
+
+        $zoneStmt =
+            $this->pdo->prepare("
+                SELECT zoneID
+                FROM zones
+                WHERE zoneID = ?
+                LIMIT 1
+            ");
+
+        $zoneStmt->execute([
+            $zoneID
+        ]);
+
+        if (
+            $zoneStmt->fetchColumn() ===
+            false
+        ) {
+            throw new InvalidArgumentException(
+                'The selected zone does not exist.'
+            );
+        }
+
+
+        /*
+        |--------------------------------------------------------------------------
+        | VERIFY RATE PERIOD
+        |--------------------------------------------------------------------------
+        |
+        | Do not require the period to be active.
+        |
+        | Inactive historic periods may still have saved airport prices,
+        | and the Airport Prices screen deliberately keeps those visible.
+        |
+        */
+
+        $periodStmt =
+            $this->pdo->prepare("
+                SELECT pricingPeriodID
+                FROM pricing_periods
+                WHERE pricingPeriodID = ?
+                LIMIT 1
+            ");
+
+        $periodStmt->execute([
+            $pricingPeriodID
+        ]);
+
+        if (
+            $periodStmt->fetchColumn() ===
+            false
+        ) {
+            throw new InvalidArgumentException(
+                'The selected rate period does not exist.'
+            );
+        }
+
+
+        /*
+        |--------------------------------------------------------------------------
+        | VERIFY PASSENGER BAND
+        |--------------------------------------------------------------------------
+        |
+        | The band must specifically belong to airport transfers.
+        |
+        */
+
+        $bandStmt =
+            $this->pdo->prepare("
+                SELECT passengerBandID
+                FROM passenger_bands
+                WHERE passengerBandID = ?
+                AND serviceType = 'airport_transfer'
+                LIMIT 1
+            ");
+
+        $bandStmt->execute([
+            $passengerBandID
+        ]);
+
+        if (
+            $bandStmt->fetchColumn() ===
+            false
+        ) {
+            throw new InvalidArgumentException(
+                'The selected passenger band is not valid for airport transfers.'
+            );
+        }
+
+
+        /*
+        |--------------------------------------------------------------------------
+        | SAVE PRICE
+        |--------------------------------------------------------------------------
+        |
+        | The UNIQUE constraint on airport_pricing represents:
+        |
+        | vehicle
+        | + airport
+        | + zone
+        | + journey type
+        | + rate period
+        | + passenger band
+        |
+        | If that combination already exists, update it.
+        |
+        */
 
         $sql = "
             INSERT INTO airport_pricing
@@ -1963,7 +2657,10 @@ class AirportSettingsService
                 isActive = VALUES(isActive)
         ";
 
-        $stmt = $this->pdo->prepare($sql);
+        $stmt =
+            $this->pdo->prepare(
+                $sql
+            );
 
         $stmt->execute([
             $vehicleID,
