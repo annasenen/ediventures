@@ -1359,6 +1359,20 @@ section {
     font-weight: 600;
 }
 
+/*
+|--------------------------------------------------------------------------
+| ADMIN SCROLL TARGET
+|--------------------------------------------------------------------------
+|
+| Prevent anchored admin sections from being hidden underneath
+| the fixed navigation bar.
+|
+*/
+
+.admin-scroll-target {
+    scroll-margin-top: 120px;
+}
+
 
 /* =========================================================
    RESPONSIVE ADMIN

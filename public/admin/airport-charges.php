@@ -312,7 +312,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
         header(
             'Location: /admin/airport-charges.php?' .
-            $redirectQuery
+            $redirectQuery .
+            '#airportChargeSaveMessage'
         );
 
         exit;
@@ -479,20 +480,19 @@ include __DIR__ . '/../../includes/nav.php';
                  PAGE HEADER
             ====================================================== -->
 
-            <div
-                class="
-                    d-flex
-                    justify-content-between
-                    align-items-center
-                    flex-wrap
-                    gap-3
-                    mb-4
-                "
-            >
+            <div class="admin-page-toolbar mb-4">
 
                 <div>
 
-                    <h2 class="section-title mb-1">
+                    <a
+                        href="/admin/airport-settings.php"
+                        class="admin-back-link"
+                    >
+                        <i class="fa-solid fa-arrow-left me-2"></i>
+                        Airport Settings
+                    </a>
+
+                    <h2 class="admin-page-title mt-3 mb-1">
                         Airport Access Charges
                     </h2>
 
@@ -502,19 +502,6 @@ include __DIR__ . '/../../includes/nav.php';
                     </p>
 
                 </div>
-
-
-                <a
-                    href="/admin/airport-settings.php"
-                    class="
-                        btn
-                        btn-outline-dark
-                        rounded-pill
-                        px-4
-                    "
-                >
-                    Back to Airport Settings
-                </a>
 
             </div>
 
@@ -586,13 +573,17 @@ include __DIR__ . '/../../includes/nav.php';
                      AIRPORT SELECTOR
                 ================================================== -->
 
-                <div class="card border-0 shadow-sm mb-4">
+                <div
+                    class="card border-0 shadow-sm mb-4 admin-scroll-target"
+                    id="airportChargeSelector"
+                >
 
                     <div class="card-body p-4">
 
                         <form
                             method="get"
-                            action="/admin/airport-charges.php"
+                            action="/admin/airport-charges.php#airportChargeSelector"
+                            id="airportChargeSelectorForm"
                         >
 
                             <input
@@ -656,9 +647,10 @@ include __DIR__ . '/../../includes/nav.php';
 
                                     <button
                                         type="submit"
+                                        id="airportChargeLoadButton"
                                         class="
                                             btn
-                                            btn-primary
+                                            btn-brand
                                             w-100
                                         "
                                     >
@@ -768,7 +760,7 @@ include __DIR__ . '/../../includes/nav.php';
 
                                     <!-- PICKUP -->
 
-                                    <div class="col-md-6">
+                                    <div class="col-md-6 col-lg-4">
 
                                         <label
                                             for="pickupCharge"
@@ -777,7 +769,7 @@ include __DIR__ . '/../../includes/nav.php';
                                             Pickup Charge
                                         </label>
 
-                                        <div class="input-group">
+                                        <div class="input-group admin-money-input">
 
                                             <span class="input-group-text">
                                                 £
@@ -826,7 +818,7 @@ include __DIR__ . '/../../includes/nav.php';
 
                                     <!-- DROP-OFF -->
 
-                                    <div class="col-md-6">
+                                    <div class="col-md-6 col-lg-4">
 
                                         <label
                                             for="dropoffCharge"
@@ -835,7 +827,7 @@ include __DIR__ . '/../../includes/nav.php';
                                             Drop-off Charge
                                         </label>
 
-                                        <div class="input-group">
+                                        <div class="input-group admin-money-input">
 
                                             <span class="input-group-text">
                                                 £
@@ -965,7 +957,7 @@ include __DIR__ . '/../../includes/nav.php';
                                         type="submit"
                                         class="
                                             btn
-                                            btn-primary
+                                            btn-brand
                                             px-4
                                         "
                                     >
@@ -1026,6 +1018,8 @@ include __DIR__ . '/../../includes/nav.php';
 
 </main>
 
+
+<script src="/assets/js/airport-charges.js"></script>
 
 <?php
 

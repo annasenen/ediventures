@@ -8,51 +8,40 @@ document.addEventListener(
 
         /*
         |--------------------------------------------------------------------------
-        | AUTO-LOAD PRICE MATRIX
+        | AUTO-LOAD AIRPORT RULES
         |--------------------------------------------------------------------------
-        |
-        | Changing any pricing selector reloads the matrix.
-        | PHP still validates all selected values.
-        |
         */
 
         const selectorForm =
             document.getElementById(
-                'airportPriceSelectorForm'
+                'journeyRuleSelectorForm'
+            );
+
+        const airportSelect =
+            document.getElementById(
+                'airportID'
             );
 
         const loadButton =
             document.getElementById(
-                'airportPriceLoadButton'
+                'journeyRuleLoadButton'
             );
 
-        if (selectorForm) {
 
-            const selectors = [
-                document.getElementById('airportID'),
-                document.getElementById('zoneID'),
-                document.getElementById('journeyType'),
-                document.getElementById('vehicleID')
-            ];
+        if (
+            selectorForm &&
+            airportSelect
+        ) {
 
             if (loadButton) {
                 loadButton.style.display = 'none';
             }
 
-            selectors.forEach(
-                function (selector) {
+            airportSelect.addEventListener(
+                'change',
 
-                    if (!selector) {
-                        return;
-                    }
-
-                    selector.addEventListener(
-                        'change',
-
-                        function () {
-                            selectorForm.requestSubmit();
-                        }
-                    );
+                function () {
+                    selectorForm.requestSubmit();
                 }
             );
         }
@@ -62,14 +51,11 @@ document.addEventListener(
         |--------------------------------------------------------------------------
         | SAVE CONFIRMATION
         |--------------------------------------------------------------------------
-        |
-        | After saving prices, take the admin to the confirmation.
-        |
         */
 
         const saveMessage =
             document.getElementById(
-                'airportPriceSaveMessage'
+                'journeyRuleSaveMessage'
             );
 
         if (!saveMessage) {

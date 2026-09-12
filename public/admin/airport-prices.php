@@ -856,13 +856,17 @@ include __DIR__ . '/../../includes/nav.php';
                  CONFIGURATION SELECTORS
             ====================================================== -->
 
-            <div class="card border-0 shadow-sm mb-4">
+            <div
+                class="card border-0 shadow-sm mb-4 admin-scroll-target"
+                id="airportPriceSelectorSection"
+            >
 
                 <div class="card-body p-4">
 
                     <form
                         method="get"
-                        action="/admin/airport-prices.php"
+                        action="/admin/airport-prices.php#airportPriceSelectorSection"
+                        id="airportPriceSelectorForm"
                     >
 
                         <div class="row g-3 align-items-end">
@@ -1046,6 +1050,7 @@ include __DIR__ . '/../../includes/nav.php';
                             <button
                                 type="submit"
                                 class="btn btn-primary"
+                                id="airportPriceLoadButton"
                             >
                                 <i class="fa-solid fa-table me-1"></i>
                                 Load Prices

@@ -299,11 +299,13 @@ CREATE TABLE airport_journey_rules (
     updatedAt DATETIME DEFAULT CURRENT_TIMESTAMP
         ON UPDATE CURRENT_TIMESTAMP,
 
-    UNIQUE (
-        airportID,
-        journeyType
-    ),
+    CONSTRAINT uq_airport_journey_rule
+        UNIQUE (
+            airportID,
+            journeyType
+        ),
 
-    FOREIGN KEY (airportID)
+    CONSTRAINT fk_airport_journey_rules_airport
+        FOREIGN KEY (airportID)
         REFERENCES airports(airportID)
 );

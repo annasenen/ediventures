@@ -1766,6 +1766,32 @@ class AirportSettingsService
             );
         }
 
+        /*
+        |--------------------------------------------------------------------------
+        | VERIFY AIRPORT
+        |--------------------------------------------------------------------------
+        */
+
+        $airportStmt =
+            $this->pdo->prepare("
+                SELECT airportID
+                FROM airports
+                WHERE airportID = ?
+                LIMIT 1
+            ");
+
+        $airportStmt->execute([
+            $airportID
+        ]);
+
+        if (
+            $airportStmt->fetchColumn() === false
+        ) {
+            throw new InvalidArgumentException(
+                'The selected airport does not exist.'
+            );
+        }
+
         if (!in_array($journeyType, ['pickup', 'dropoff'], true)) {
             throw new InvalidArgumentException(
                 'Invalid journey type.'
